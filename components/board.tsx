@@ -22,34 +22,34 @@ type BoardState = [
 const player: Player = "black";
 const opponent: Player = player === "black" ? "white" : "black";
 
-const startingBoard: BoardState = [
-  [
-    { content: opponent, x: 0, y: 0 },
-    { content: opponent, x: 1, y: 0 },
-    { content: opponent, x: 2, y: 0 },
-    { content: opponent, x: 3, y: 0 },
-  ],
-  [
-    { content: "empty", x: 0, y: 1 },
-    { content: "empty", x: 1, y: 1 },
-    { content: "empty", x: 2, y: 1 },
-    { content: "empty", x: 3, y: 1 },
-  ],
-  [
-    { content: "empty", x: 0, y: 2 },
-    { content: "empty", x: 1, y: 2 },
-    { content: "empty", x: 2, y: 2 },
-    { content: "empty", x: 3, y: 2 },
-  ],
-  [
-    { content: player, x: 0, y: 3 },
-    { content: player, x: 1, y: 3 },
-    { content: player, x: 2, y: 3 },
-    { content: player, x: 3, y: 3 },
-  ],
-];
+const Board = ({ color }: { color: "dark" | "light" }) => {
+  const startingBoard: BoardState = [
+    [
+      { content: opponent, x: 0, y: 0 },
+      { content: opponent, x: 1, y: 0 },
+      { content: opponent, x: 2, y: 0 },
+      { content: opponent, x: 3, y: 0 },
+    ],
+    [
+      { content: "empty", x: 0, y: 1 },
+      { content: "empty", x: 1, y: 1 },
+      { content: "empty", x: 2, y: 1 },
+      { content: "empty", x: 3, y: 1 },
+    ],
+    [
+      { content: "empty", x: 0, y: 2 },
+      { content: "empty", x: 1, y: 2 },
+      { content: "empty", x: 2, y: 2 },
+      { content: "empty", x: 3, y: 2 },
+    ],
+    [
+      { content: player, x: 0, y: 3 },
+      { content: player, x: 1, y: 3 },
+      { content: player, x: 2, y: 3 },
+      { content: player, x: 3, y: 3 },
+    ],
+  ];
 
-const Board = () => {
   const [board, setBoard] = useState<BoardState>(startingBoard);
   const [selectedStone, setSelectedStone] = useState<
     { x: Coordinate; y: Coordinate } | undefined
@@ -195,7 +195,11 @@ const Board = () => {
   };
 
   return (
-    <div className="w-64 h-64 bg-white m-auto grid grid-cols-4">
+    <div
+      className={`${
+        color === "dark" ? "bg-gray-700" : "bg-gray-200"
+      } w-64 h-64 m-auto grid grid-cols-4`}
+    >
       {board.flat().map(({ content, selected, possibleToMoveTo, x, y }, index) => (
         <button
           onClick={() => onTileClicked(x, y)}
