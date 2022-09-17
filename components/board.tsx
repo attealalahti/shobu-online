@@ -202,6 +202,8 @@ const Board = () => {
           key={index}
           className={`${selected ? "bg-blue-400" : ""} ${
             possibleToMoveTo ? "bg-red-400" : ""
+          } ${x < 3 ? "border-r border-black" : ""} ${
+            y < 3 ? "border-b border-black" : ""
           } w-16 h-16`}
           disabled={
             !(
