@@ -1,6 +1,10 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
+import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
+
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io();
 
 const Home: NextPage = () => {
   return (
