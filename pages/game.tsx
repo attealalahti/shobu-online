@@ -11,14 +11,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("/1");
 const Game: NextPage = () => {
   const [player, setPlayer] = useState<Player | undefined>(undefined);
   const [allBoards, setAllBoards] = useState<AllBoards | undefined>(undefined);
-
-  const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
-    if (allBoards) {
-      const newAllBoards: AllBoards = [...allBoards];
-      newAllBoards[boardIndex] = newBoard;
-      setAllBoards(newAllBoards);
-    }
-  };
+  const [currentTurn, setCurrentTurn] = useState<Player>("spectator");
 
   useEffect(() => {
     const joinCallback = (player: Player, noBoard?: boolean) => {
@@ -30,6 +23,7 @@ const Game: NextPage = () => {
           createStartingBoard(player),
           createStartingBoard(player),
         ]);
+        setCurrentTurn("black");
       }
     };
     const createStartingBoard = (player: Player): BoardState => {
@@ -71,6 +65,22 @@ const Game: NextPage = () => {
     };
   }, []);
 
+  const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
+    if (allBoards) {
+      const newAllBoards: AllBoards = [...allBoards];
+      newAllBoards[boardIndex] = newBoard;
+      setAllBoards(newAllBoards);
+    }
+  };
+
+  const endTurn = () => {
+    if (player === "black") {
+      setCurrentTurn("white");
+    } else if (player === "white") {
+      setCurrentTurn("black");
+    }
+  };
+
   return (
     <div>
       <Head>
@@ -86,14 +96,18 @@ const Game: NextPage = () => {
               <Board
                 color="dark"
                 player={player}
+                currentTurn={currentTurn}
                 updateBoard={updateBoard}
+                endTurn={endTurn}
                 board={allBoards[0]}
                 boardIndex={0}
               />
               <Board
                 color="light"
                 player={player}
+                currentTurn={currentTurn}
                 updateBoard={updateBoard}
+                endTurn={endTurn}
                 board={allBoards[1]}
                 boardIndex={1}
               />
@@ -101,14 +115,18 @@ const Game: NextPage = () => {
               <Board
                 color="dark"
                 player={player}
+                currentTurn={currentTurn}
                 updateBoard={updateBoard}
+                endTurn={endTurn}
                 board={allBoards[2]}
                 boardIndex={2}
               />
               <Board
                 color="light"
                 player={player}
+                currentTurn={currentTurn}
                 updateBoard={updateBoard}
+                endTurn={endTurn}
                 board={allBoards[3]}
                 boardIndex={3}
               />

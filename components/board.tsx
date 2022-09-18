@@ -7,11 +7,21 @@ import type { Player, IntRange, BoardState } from "../types/game-types";
 type BoardProps = {
   color: "dark" | "light";
   player: Player;
+  currentTurn: Player;
   boardIndex: IntRange;
   board: BoardState;
   updateBoard: (boardIndex: IntRange, newBoardState: BoardState) => void;
+  endTurn: () => void;
 };
-const Board = ({ color, player, boardIndex, board, updateBoard }: BoardProps) => {
+const Board = ({
+  color,
+  player,
+  currentTurn,
+  boardIndex,
+  board,
+  updateBoard,
+  endTurn,
+}: BoardProps) => {
   const [selectedStone, setSelectedStone] = useState<
     { x: IntRange; y: IntRange } | undefined
   >(undefined);
@@ -152,6 +162,7 @@ const Board = ({ color, player, boardIndex, board, updateBoard }: BoardProps) =>
       newBoard[selectedStone.y][selectedStone.x].selected = false;
       setSelectedStone(undefined);
       updateBoard(boardIndex, newBoard);
+      endTurn();
     }
   };
 
@@ -172,7 +183,7 @@ const Board = ({ color, player, boardIndex, board, updateBoard }: BoardProps) =>
           } w-16 h-16`}
           disabled={
             !(
-              (!selectedStone && content !== "empty") ||
+              (!selectedStone && content === player && currentTurn === player) ||
               (selectedStone && (board[y][x].selected || possibleToMoveTo))
             )
           }
