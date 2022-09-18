@@ -2,27 +2,15 @@ import Image from "next/image";
 import { useState } from "react";
 import whiteStone from "../public/images/white_stone.svg";
 import blackStone from "../public/images/black_stone.svg";
+import type { Player, Coordinate, BoardState } from "../types/game-types";
 
-type Player = "black" | "white";
-type Coordinate = 0 | 1 | 2 | 3;
-type Tile = {
-  content: Player | "empty";
-  selected?: boolean;
-  possibleToMoveTo?: boolean;
-  x: Coordinate;
-  y: Coordinate;
+type BoardProps = {
+  color: "dark" | "light";
+  player: Player;
 };
-type BoardState = [
-  [Tile, Tile, Tile, Tile],
-  [Tile, Tile, Tile, Tile],
-  [Tile, Tile, Tile, Tile],
-  [Tile, Tile, Tile, Tile]
-];
+const Board = ({ color, player }: BoardProps) => {
+  const opponent: Player = player === "black" ? "white" : "black";
 
-const player: Player = "black";
-const opponent: Player = player === "black" ? "white" : "black";
-
-const Board = ({ color }: { color: "dark" | "light" }) => {
   const startingBoard: BoardState = [
     [
       { content: opponent, x: 0, y: 0 },

@@ -1,12 +1,30 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
+import { BoardState, Player } from "../types/game-types";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io();
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("/1");
 
 const Game: NextPage = () => {
+  const [player, setPlayer] = useState<Player | undefined>();
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      socket.emit("join", (player) => {
+        setPlayer(player);
+      });
+    });
+    socket.on("disconnect", () => setPlayer(undefined));
+    socket.emit("join", (player) => setPlayer(player));
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+    };
+  }, []);
+
   return (
     <div>
       <Head>
@@ -15,13 +33,22 @@ const Game: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="bg-black w-screen h-screen">
-        <div className="w-full h-full grid grid-cols-2 p-10 max-w-5xl m-auto">
-          <Board color="dark" />
-          <Board color="light" />
-          <hr className="col-span-2 m-auto h-1 w-4/5" />
-          <Board color="dark" />
-          <Board color="light" />
-        </div>
+        {player ? (
+          <div className="w-full h-full flex justify-center align-middle flex-col">
+            <div className="flex-grow-0 text-white">{player}</div>
+            <div className="grid flex-auto grid-cols-2 p-10 w-full max-w-5xl m-auto">
+              <Board color="dark" player={player} />
+              <Board color="light" player={player} />
+              <hr className="col-span-2 m-auto h-1 w-4/5" />
+              <Board color="dark" player={player} />
+              <Board color="light" player={player} />
+            </div>
+          </div>
+        ) : (
+          <div className="w-full h-full flex">
+            <div className="m-auto text-lg text-white">Loading...</div>
+          </div>
+        )}
       </main>
     </div>
   );
