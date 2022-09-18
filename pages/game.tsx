@@ -3,22 +3,68 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
-import { BoardState, Player } from "../types/game-types";
+import { AllBoards, BoardState, IntRange, Player } from "../types/game-types";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("/1");
 
 const Game: NextPage = () => {
-  const [player, setPlayer] = useState<Player | undefined>();
+  const [player, setPlayer] = useState<Player | undefined>(undefined);
+  const [allBoards, setAllBoards] = useState<AllBoards | undefined>(undefined);
+
+  const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
+    if (allBoards) {
+      const newAllBoards: AllBoards = [...allBoards];
+      newAllBoards[boardIndex] = newBoard;
+      setAllBoards(newAllBoards);
+    }
+  };
 
   useEffect(() => {
+    const joinCallback = (player: Player, noBoard?: boolean) => {
+      setPlayer(player);
+      if (noBoard) {
+        setAllBoards([
+          createStartingBoard(player),
+          createStartingBoard(player),
+          createStartingBoard(player),
+          createStartingBoard(player),
+        ]);
+      }
+    };
+    const createStartingBoard = (player: Player): BoardState => {
+      return [
+        [
+          { content: "white", x: 0, y: 0 },
+          { content: "white", x: 1, y: 0 },
+          { content: "white", x: 2, y: 0 },
+          { content: "white", x: 3, y: 0 },
+        ],
+        [
+          { content: "empty", x: 0, y: 1 },
+          { content: "empty", x: 1, y: 1 },
+          { content: "empty", x: 2, y: 1 },
+          { content: "empty", x: 3, y: 1 },
+        ],
+        [
+          { content: "empty", x: 0, y: 2 },
+          { content: "empty", x: 1, y: 2 },
+          { content: "empty", x: 2, y: 2 },
+          { content: "empty", x: 3, y: 2 },
+        ],
+        [
+          { content: "black", x: 0, y: 3 },
+          { content: "black", x: 1, y: 3 },
+          { content: "black", x: 2, y: 3 },
+          { content: "black", x: 3, y: 3 },
+        ],
+      ];
+    };
     socket.on("connect", () => {
-      socket.emit("join", (player) => {
-        setPlayer(player);
-      });
+      socket.emit("join", joinCallback);
     });
     socket.on("disconnect", () => setPlayer(undefined));
-    socket.emit("join", (player) => setPlayer(player));
+    socket.emit("join", joinCallback);
     return () => {
       socket.off("connect");
       socket.off("disconnect");
@@ -33,15 +79,39 @@ const Game: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="bg-black w-screen h-screen">
-        {player ? (
+        {player && allBoards ? (
           <div className="w-full h-full flex justify-center align-middle flex-col">
             <div className="flex-grow-0 text-white">{player}</div>
             <div className="grid flex-auto grid-cols-2 p-10 w-full max-w-5xl m-auto">
-              <Board color="dark" player={player} />
-              <Board color="light" player={player} />
+              <Board
+                color="dark"
+                player={player}
+                updateBoard={updateBoard}
+                board={allBoards[0]}
+                boardIndex={0}
+              />
+              <Board
+                color="light"
+                player={player}
+                updateBoard={updateBoard}
+                board={allBoards[1]}
+                boardIndex={1}
+              />
               <hr className="col-span-2 m-auto h-1 w-4/5" />
-              <Board color="dark" player={player} />
-              <Board color="light" player={player} />
+              <Board
+                color="dark"
+                player={player}
+                updateBoard={updateBoard}
+                board={allBoards[2]}
+                boardIndex={2}
+              />
+              <Board
+                color="light"
+                player={player}
+                updateBoard={updateBoard}
+                board={allBoards[3]}
+                boardIndex={3}
+              />
             </div>
           </div>
         ) : (

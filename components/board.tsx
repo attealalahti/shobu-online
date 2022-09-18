@@ -2,48 +2,21 @@ import Image from "next/image";
 import { useState } from "react";
 import whiteStone from "../public/images/white_stone.svg";
 import blackStone from "../public/images/black_stone.svg";
-import type { Player, Coordinate, BoardState } from "../types/game-types";
+import type { Player, IntRange, BoardState } from "../types/game-types";
 
 type BoardProps = {
   color: "dark" | "light";
   player: Player;
+  boardIndex: IntRange;
+  board: BoardState;
+  updateBoard: (boardIndex: IntRange, newBoardState: BoardState) => void;
 };
-const Board = ({ color, player }: BoardProps) => {
-  const opponent: Player = player === "black" ? "white" : "black";
-
-  const startingBoard: BoardState = [
-    [
-      { content: opponent, x: 0, y: 0 },
-      { content: opponent, x: 1, y: 0 },
-      { content: opponent, x: 2, y: 0 },
-      { content: opponent, x: 3, y: 0 },
-    ],
-    [
-      { content: "empty", x: 0, y: 1 },
-      { content: "empty", x: 1, y: 1 },
-      { content: "empty", x: 2, y: 1 },
-      { content: "empty", x: 3, y: 1 },
-    ],
-    [
-      { content: "empty", x: 0, y: 2 },
-      { content: "empty", x: 1, y: 2 },
-      { content: "empty", x: 2, y: 2 },
-      { content: "empty", x: 3, y: 2 },
-    ],
-    [
-      { content: player, x: 0, y: 3 },
-      { content: player, x: 1, y: 3 },
-      { content: player, x: 2, y: 3 },
-      { content: player, x: 3, y: 3 },
-    ],
-  ];
-
-  const [board, setBoard] = useState<BoardState>(startingBoard);
+const Board = ({ color, player, boardIndex, board, updateBoard }: BoardProps) => {
   const [selectedStone, setSelectedStone] = useState<
-    { x: Coordinate; y: Coordinate } | undefined
+    { x: IntRange; y: IntRange } | undefined
   >(undefined);
 
-  const onTileClicked = (x: Coordinate, y: Coordinate) => {
+  const onTileClicked = (x: IntRange, y: IntRange) => {
     if (!selectedStone || (x === selectedStone?.x && y === selectedStone?.y)) {
       selectStone(x, y);
     } else if (selectedStone) {
@@ -51,40 +24,40 @@ const Board = ({ color, player }: BoardProps) => {
     }
   };
 
-  const selectStone = (x: Coordinate, y: Coordinate) => {
+  const selectStone = (x: IntRange, y: IntRange) => {
     const newBoard: BoardState = [...board];
     newBoard[y][x].selected = !newBoard[y][x].selected;
     if (newBoard[y][x].selected) {
-      let up1: Coordinate | undefined;
-      let up2: Coordinate | undefined;
-      let right1: Coordinate | undefined;
-      let right2: Coordinate | undefined;
-      let down1: Coordinate | undefined;
-      let down2: Coordinate | undefined;
-      let left1: Coordinate | undefined;
-      let left2: Coordinate | undefined;
+      let up1: IntRange | undefined;
+      let up2: IntRange | undefined;
+      let right1: IntRange | undefined;
+      let right2: IntRange | undefined;
+      let down1: IntRange | undefined;
+      let down2: IntRange | undefined;
+      let left1: IntRange | undefined;
+      let left2: IntRange | undefined;
       if (y - 1 >= 0) {
-        up1 = (y - 1) as Coordinate;
+        up1 = (y - 1) as IntRange;
         if (y - 2 >= 0) {
-          up2 = (y - 2) as Coordinate;
+          up2 = (y - 2) as IntRange;
         }
       }
       if (x + 1 < 4) {
-        right1 = (x + 1) as Coordinate;
+        right1 = (x + 1) as IntRange;
         if (x + 2 < 4) {
-          right2 = (x + 2) as Coordinate;
+          right2 = (x + 2) as IntRange;
         }
       }
       if (y + 1 < 4) {
-        down1 = (y + 1) as Coordinate;
+        down1 = (y + 1) as IntRange;
         if (y + 2 < 4) {
-          down2 = (y + 2) as Coordinate;
+          down2 = (y + 2) as IntRange;
         }
       }
       if (x - 1 >= 0) {
-        left1 = (x - 1) as Coordinate;
+        left1 = (x - 1) as IntRange;
         if (x - 2 >= 0) {
-          left2 = (x - 2) as Coordinate;
+          left2 = (x - 2) as IntRange;
         }
       }
       if (up1 !== undefined) {
@@ -159,18 +132,18 @@ const Board = ({ color, player }: BoardProps) => {
       clearMoveTargets(newBoard);
     }
     setSelectedStone(newBoard[y][x].selected ? { x, y } : undefined);
-    setBoard(newBoard);
+    updateBoard(boardIndex, newBoard);
   };
 
   const clearMoveTargets = (board: BoardState) => {
-    for (let i: Coordinate = 0; i < 4; i = (i + 1) as Coordinate) {
-      for (let j: Coordinate = 0; j < 4; j = (j + 1) as Coordinate) {
+    for (let i: IntRange = 0; i < 4; i = (i + 1) as IntRange) {
+      for (let j: IntRange = 0; j < 4; j = (j + 1) as IntRange) {
         board[i][j].possibleToMoveTo = false;
       }
     }
   };
 
-  const moveStone = (x: Coordinate, y: Coordinate) => {
+  const moveStone = (x: IntRange, y: IntRange) => {
     if (selectedStone) {
       const newBoard: BoardState = [...board];
       newBoard[y][x].content = player;
@@ -178,7 +151,7 @@ const Board = ({ color, player }: BoardProps) => {
       newBoard[selectedStone.y][selectedStone.x].content = "empty";
       newBoard[selectedStone.y][selectedStone.x].selected = false;
       setSelectedStone(undefined);
-      setBoard(newBoard);
+      updateBoard(boardIndex, newBoard);
     }
   };
 

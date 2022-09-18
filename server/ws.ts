@@ -25,12 +25,12 @@ export default function ws(server: Server) {
         })`
       );
     });
-    socket.on("join", async (callback: (player: Player) => void) => {
+    socket.on("join", async (callback: (player: Player, noBoard?: boolean) => void) => {
       const sockets = await socket.nsp.fetchSockets();
       if (sockets.length === 1) {
         const playerType = Math.random() > 0.5 ? "black" : "white";
         socket.data.player = playerType;
-        callback(playerType);
+        callback(playerType, true);
       } else {
         const playerSockets = sockets.filter(
           (nspSocket) =>
