@@ -82,9 +82,9 @@ export default function ws(server: Server) {
       );
     });
     socket.on("join", async (callback: (player: Player, game: GameState) => void) => {
-      const id = socket.nsp.name.slice(1);
+      const namespace = socket.nsp.name.slice(1);
       const dbGame = await prisma.game.findFirst({
-        where: { id },
+        where: { namespace },
       });
       if (dbGame) {
         try {
@@ -101,12 +101,12 @@ export default function ws(server: Server) {
             : "black";
           if (player === "black") {
             await prisma.game.update({
-              where: { id },
+              where: { namespace },
               data: { blackPlayerExists: true },
             });
           } else if (player === "white") {
             await prisma.game.update({
-              where: { id },
+              where: { namespace },
               data: { whitePlayerExists: true },
             });
           }
@@ -136,8 +136,8 @@ export default function ws(server: Server) {
             boards,
           };
           callback(player, game);
-        } catch (err) {
-          console.log(err);
+        } catch (zodError) {
+          console.log(zodError);
         }
       } else {
         const player = Math.random() > 0.5 ? "black" : "white";
@@ -150,7 +150,7 @@ export default function ws(server: Server) {
         const newDBGame = gameStateToDBGameState(newGame);
         await prisma.game.create({
           data: {
-            id,
+            namespace,
             currentTurn: newDBGame.currentTurn,
             boards: newDBGame.boards,
             blackPlayerExists,

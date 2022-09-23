@@ -8,9 +8,10 @@ datasource db {
 }
 
 model game {
-  id                  String  @id
-  currentTurn         String @map("current_turn")
-  blackPlayerExists   Boolean @default(false) @map("black_player_exists")
-  whitePlayerExists   Boolean @default(false) @map("white_player_exists")
-  boards              Json
+  id                  Int      @id @default(autoincrement())
+  namespace           String?  @unique
+  currentTurn         String   @map("current_turn")
+  blackPlayerExists   Boolean? @default(false) @map("black_player_exists")
+  whitePlayerExists   Boolean? @default(false) @map("white_player_exists")
+  boards              Json     @db.Json
 }
