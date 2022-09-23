@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
-import { AllBoards, BoardState, IntRange, Player } from "../types/game-types";
+import { AllBoards, BoardState, GameState, IntRange, Player } from "../types/game-types";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("/1");
@@ -14,45 +14,10 @@ const Game: NextPage = () => {
   const [currentTurn, setCurrentTurn] = useState<Player>("spectator");
 
   useEffect(() => {
-    const joinCallback = (player: Player, noBoard?: boolean) => {
+    const joinCallback = (player: Player, game: GameState) => {
       setPlayer(player);
-      if (noBoard) {
-        setAllBoards([
-          createStartingBoard(player),
-          createStartingBoard(player),
-          createStartingBoard(player),
-          createStartingBoard(player),
-        ]);
-        setCurrentTurn("black");
-      }
-    };
-    const createStartingBoard = (player: Player): BoardState => {
-      return [
-        [
-          { content: "white", x: 0, y: 0 },
-          { content: "white", x: 1, y: 0 },
-          { content: "white", x: 2, y: 0 },
-          { content: "white", x: 3, y: 0 },
-        ],
-        [
-          { content: "empty", x: 0, y: 1 },
-          { content: "empty", x: 1, y: 1 },
-          { content: "empty", x: 2, y: 1 },
-          { content: "empty", x: 3, y: 1 },
-        ],
-        [
-          { content: "empty", x: 0, y: 2 },
-          { content: "empty", x: 1, y: 2 },
-          { content: "empty", x: 2, y: 2 },
-          { content: "empty", x: 3, y: 2 },
-        ],
-        [
-          { content: "black", x: 0, y: 3 },
-          { content: "black", x: 1, y: 3 },
-          { content: "black", x: 2, y: 3 },
-          { content: "black", x: 3, y: 3 },
-        ],
-      ];
+      setCurrentTurn(game.currentTurn);
+      setAllBoards(game.boards);
     };
     socket.on("connect", () => {
       socket.emit("join", joinCallback);
@@ -63,6 +28,7 @@ const Game: NextPage = () => {
       socket.off("connect");
       socket.off("disconnect");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
