@@ -13,6 +13,8 @@ export default withTRPC<AppRouter>({
     const url = process.env.RAILWAY_STATIC_URL
       ? `https://${process.env.RAILWAY_STATIC_URL}/api/trpc`
       : "http://localhost:3000/api/trpc";
+    let headers = ctx?.req?.headers;
+    delete headers?.connection;
     return { url };
   },
   ssr: false,
