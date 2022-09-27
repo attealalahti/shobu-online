@@ -2,26 +2,42 @@ import Head from "next/head";
 import { useEffect, useState, useMemo } from "react";
 import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
-import {
-  AllBoards,
-  BoardState,
-  GameState,
-  IntRange,
-  Player,
-} from "../types/game-types";
+import { AllBoards, BoardState, IntRange } from "../types/game-types";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
 import { useRouter } from "next/router";
+import { trpc } from "../utils/trpc";
+import { QueryClient } from "react-query";
+
+const queryClient = new QueryClient();
 
 const Game = () => {
   const [connected, setConnected] = useState<boolean>(false);
-  const [player, setPlayer] = useState<Player | undefined>(undefined);
-  const [allBoards, setAllBoards] = useState<AllBoards | undefined>(undefined);
-  const [currentTurn, setCurrentTurn] = useState<Player>("spectator");
   const router = useRouter();
   const socket: Socket<ServerToClientEvents, ClientToServerEvents> = useMemo(
     () => io(`/${router.query.gameId}`),
     [router.query.gameId]
   );
+
+  const storedId = localStorage.getItem("id");
+  const playerId = trpc.useQuery(["id"], {
+    enabled: !storedId,
+    initialData: storedId ?? undefined,
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    onSuccess: (data) => {
+      localStorage.setItem("id", data);
+    },
+  });
+
+  const game = trpc.useQuery([
+    "join",
+    playerId.data
+      ? { playerId: playerId.data, gameId: router.query.gameId as string }
+      : undefined,
+  ]);
+  const playerType = game.data?.playerType;
+  const currentTurn = game.data?.currentTurn;
+  const boards = game.data?.boards;
 
   useEffect(() => {
     socket.on("connect", () => setConnected(true));
@@ -33,19 +49,20 @@ const Game = () => {
   }, [socket]);
 
   const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
-    if (allBoards) {
-      const newAllBoards: AllBoards = [...allBoards];
-      newAllBoards[boardIndex] = newBoard;
-      setAllBoards(newAllBoards);
+    if (boards) {
+      const newBoards: AllBoards = [...boards];
+      newBoards[boardIndex] = newBoard;
+      queryClient.setQueryData("join", { ...game.data, boards: newBoards });
     }
   };
 
   const endTurn = () => {
+    /*
     if (player === "black") {
       setCurrentTurn("white");
     } else if (player === "white") {
       setCurrentTurn("black");
-    }
+    }*/
   };
 
   return (
@@ -56,45 +73,45 @@ const Game = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="bg-black w-screen h-screen">
-        {connected && player && allBoards ? (
+        {connected && playerType && currentTurn && boards ? (
           <div className="w-full h-full flex justify-center align-middle flex-col">
-            <div className="flex-grow-0 text-white">{player}</div>
+            <div className="flex-grow-0 text-white">{playerType}</div>
             <div className="grid flex-auto grid-cols-2 p-10 w-full max-w-5xl m-auto">
               <Board
                 color="dark"
-                player={player}
+                player={playerType}
                 currentTurn={currentTurn}
                 updateBoard={updateBoard}
                 endTurn={endTurn}
-                board={allBoards[0]}
+                board={boards[0]}
                 boardIndex={0}
               />
               <Board
                 color="light"
-                player={player}
+                player={playerType}
                 currentTurn={currentTurn}
                 updateBoard={updateBoard}
                 endTurn={endTurn}
-                board={allBoards[1]}
+                board={boards[1]}
                 boardIndex={1}
               />
               <hr className="col-span-2 m-auto h-1 w-4/5" />
               <Board
                 color="dark"
-                player={player}
+                player={playerType}
                 currentTurn={currentTurn}
                 updateBoard={updateBoard}
                 endTurn={endTurn}
-                board={allBoards[2]}
+                board={boards[2]}
                 boardIndex={2}
               />
               <Board
                 color="light"
-                player={player}
+                player={playerType}
                 currentTurn={currentTurn}
                 updateBoard={updateBoard}
                 endTurn={endTurn}
-                board={allBoards[3]}
+                board={boards[3]}
                 boardIndex={3}
               />
             </div>

@@ -8,10 +8,18 @@ datasource db {
 }
 
 model game {
-  id                  Int      @id @default(autoincrement())
-  namespace           String?  @unique
-  currentTurn         String   @map("current_turn")
-  blackPlayerExists   Boolean? @default(false) @map("black_player_exists")
-  whitePlayerExists   Boolean? @default(false) @map("white_player_exists")
-  boards              Json     @db.Json
+  id                        Int     @id @default(autoincrement())
+  namespace                 String? @unique
+  currentTurn               String  @map("current_turn")
+  boards                    Json    @db.Json
+  black                     String? @db.Uuid
+  white                     String? @db.Uuid
+  player_game_blackToplayer player? @relation("game_blackToplayer", fields: [black], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_black_id")
+  player_game_whiteToplayer player? @relation("game_whiteToplayer", fields: [white], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_white_id")
+}
+
+model player {
+  id                      String @id @db.Uuid
+  game_game_blackToplayer game[] @relation("game_blackToplayer")
+  game_game_whiteToplayer game[] @relation("game_whiteToplayer")
 }
