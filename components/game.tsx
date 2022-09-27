@@ -2,11 +2,18 @@ import Head from "next/head";
 import { useEffect, useState, useMemo } from "react";
 import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
-import { AllBoards, BoardState, GameState, IntRange, Player } from "../types/game-types";
+import {
+  AllBoards,
+  BoardState,
+  GameState,
+  IntRange,
+  Player,
+} from "../types/game-types";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
 import { useRouter } from "next/router";
 
 const Game = () => {
+  const [connected, setConnected] = useState<boolean>(false);
   const [player, setPlayer] = useState<Player | undefined>(undefined);
   const [allBoards, setAllBoards] = useState<AllBoards | undefined>(undefined);
   const [currentTurn, setCurrentTurn] = useState<Player>("spectator");
@@ -17,23 +24,12 @@ const Game = () => {
   );
 
   useEffect(() => {
-    const joinCallback = (newPlayer: Player, game: GameState) => {
-      if (player === undefined || player === "spectator") {
-        setPlayer(newPlayer);
-      }
-      setCurrentTurn(game.currentTurn);
-      setAllBoards(game.boards);
-    };
-    socket.on("connect", () => {
-      socket.emit("join", joinCallback);
-    });
-    socket.on("disconnect", () => setPlayer(undefined));
-    socket.emit("join", joinCallback);
+    socket.on("connect", () => setConnected(true));
+    socket.on("disconnect", () => setConnected(false));
     return () => {
       socket.off("connect");
       socket.off("disconnect");
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
@@ -60,7 +56,7 @@ const Game = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="bg-black w-screen h-screen">
-        {player && allBoards ? (
+        {connected && player && allBoards ? (
           <div className="w-full h-full flex justify-center align-middle flex-col">
             <div className="flex-grow-0 text-white">{player}</div>
             <div className="grid flex-auto grid-cols-2 p-10 w-full max-w-5xl m-auto">
