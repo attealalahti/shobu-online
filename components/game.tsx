@@ -1,21 +1,26 @@
-import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Socket, io } from "socket.io-client";
 import Board from "../components/board";
 import { AllBoards, BoardState, GameState, IntRange, Player } from "../types/game-types";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
+import { useRouter } from "next/router";
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("/1");
-
-const Game: NextPage = () => {
+const Game = () => {
   const [player, setPlayer] = useState<Player | undefined>(undefined);
   const [allBoards, setAllBoards] = useState<AllBoards | undefined>(undefined);
   const [currentTurn, setCurrentTurn] = useState<Player>("spectator");
+  const router = useRouter();
+  const socket: Socket<ServerToClientEvents, ClientToServerEvents> = useMemo(
+    () => io(`/${router.query.gameId}`),
+    [router.query.gameId]
+  );
 
   useEffect(() => {
-    const joinCallback = (player: Player, game: GameState) => {
-      setPlayer(player);
+    const joinCallback = (newPlayer: Player, game: GameState) => {
+      if (player === undefined || player === "spectator") {
+        setPlayer(newPlayer);
+      }
       setCurrentTurn(game.currentTurn);
       setAllBoards(game.boards);
     };
@@ -29,7 +34,7 @@ const Game: NextPage = () => {
       socket.off("disconnect");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socket]);
 
   const updateBoard = (boardIndex: IntRange, newBoard: BoardState) => {
     if (allBoards) {
