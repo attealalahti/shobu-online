@@ -1,4 +1,4 @@
-import z, { boolean } from "zod";
+import z from "zod";
 export const playerEnum = z.enum(["black", "white", "spectator"]);
 export type Player = z.infer<typeof playerEnum>;
 export type IntRange = 0 | 1 | 2 | 3;

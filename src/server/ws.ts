@@ -1,11 +1,11 @@
 import type { Server } from "http";
-import type {
-  ServerToClientEvents,
+import { Server as SocketIOServer } from "socket.io";
+import {
   ClientToServerEvents,
   InterServerEvents,
+  ServerToClientEvents,
   SocketData,
 } from "../types/ws-types";
-import { Server as SocketIOServer } from "socket.io";
 
 export default function ws(server: Server) {
   const io = new SocketIOServer<

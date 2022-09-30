@@ -1,21 +1,15 @@
-import * as trpc from "@trpc/server";
-import * as trpcNext from "@trpc/server/adapters/next";
+import { createRouter } from "./context";
 import { z } from "zod";
-import { prisma } from "../../../server/db/client";
 import { v4 } from "uuid";
 import {
-  Player,
-  BoardState,
   AllBoards,
-  GameState,
+  Player,
   DbBoards,
+  BoardState,
   IntRange,
   dbBoardsSchema,
   playerEnum,
-} from "../../../types/game-types";
-
-const createContext = async () => ({ prisma });
-type Context = trpc.inferAsyncReturnType<typeof createContext>;
+} from "../../types/game-types";
 
 const createStartingBoard = (): BoardState => {
   return [
@@ -59,8 +53,7 @@ const formatBoardsForDb = (boards: AllBoards): DbBoards => {
   );
 };
 
-export const appRouter = trpc
-  .router<Context>()
+export const gameRouter = createRouter()
   .query("id", {
     async resolve({ ctx }) {
       const player = await ctx.prisma.player.create({ data: { id: v4() } });
@@ -68,12 +61,7 @@ export const appRouter = trpc
     },
   })
   .query("join", {
-    input: z
-      .object({
-        playerId: z.string(),
-        gameId: z.string(),
-      })
-      .nullish(),
+    input: z.object({ playerId: z.string(), gameId: z.string() }).nullish(),
     async resolve({
       input,
       ctx,
@@ -159,10 +147,3 @@ export const appRouter = trpc
       return undefined;
     },
   });
-
-export type AppRouter = typeof appRouter;
-
-export default trpcNext.createNextApiHandler({
-  router: appRouter,
-  createContext,
-});

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
-import whiteStone from "../public/images/white_stone.svg";
-import blackStone from "../public/images/black_stone.svg";
+import whiteStone from "../../public/images/white_stone.svg";
+import blackStone from "../../public/images/black_stone.svg";
 import type { Player, IntRange, BoardState } from "../types/game-types";
 
 type BoardProps = {
@@ -99,7 +99,10 @@ const Board = ({
         }
       }
       if (down1 !== undefined) {
-        if (right1 !== undefined && newBoard[down1][right1].content === "empty") {
+        if (
+          right1 !== undefined &&
+          newBoard[down1][right1].content === "empty"
+        ) {
           newBoard[down1][right1].possibleToMoveTo = true;
           if (
             down2 !== undefined &&
@@ -170,39 +173,43 @@ const Board = ({
     <div
       className={`${
         color === "dark" ? "bg-gray-700" : "bg-gray-200"
-      } w-64 h-64 m-auto grid grid-cols-4`}
+      } m-auto grid h-64 w-64 grid-cols-4`}
     >
-      {board.flat().map(({ content, selected, possibleToMoveTo, x, y }, index) => (
-        <button
-          onClick={() => onTileClicked(x, y)}
-          key={index}
-          className={`${selected ? "bg-blue-400" : ""} ${
-            possibleToMoveTo ? "bg-red-400" : ""
-          } ${x < 3 ? "border-r border-black" : ""} ${
-            y < 3 ? "border-b border-black" : ""
-          } w-16 h-16`}
-          disabled={
-            !(
-              (!selectedStone && content === player && currentTurn === player) ||
-              (selectedStone && (board[y][x].selected || possibleToMoveTo))
-            )
-          }
-        >
-          {content !== "empty" ? (
-            <div className="m-auto w-16 h-16 flex justify-center align-middle">
-              <Image
-                src={content === "white" ? whiteStone : blackStone}
-                alt={content}
-                width={55}
-                height={55}
-                objectFit="contain"
-              />
-            </div>
-          ) : (
-            <></>
-          )}
-        </button>
-      ))}
+      {board
+        .flat()
+        .map(({ content, selected, possibleToMoveTo, x, y }, index) => (
+          <button
+            onClick={() => onTileClicked(x, y)}
+            key={index}
+            className={`${selected ? "bg-blue-400" : ""} ${
+              possibleToMoveTo ? "bg-red-400" : ""
+            } ${x < 3 ? "border-r border-black" : ""} ${
+              y < 3 ? "border-b border-black" : ""
+            } h-16 w-16`}
+            disabled={
+              !(
+                (!selectedStone &&
+                  content === player &&
+                  currentTurn === player) ||
+                (selectedStone && (board[y][x].selected || possibleToMoveTo))
+              )
+            }
+          >
+            {content !== "empty" ? (
+              <div className="m-auto flex h-16 w-16 justify-center align-middle">
+                <Image
+                  src={content === "white" ? whiteStone : blackStone}
+                  alt={content}
+                  width={55}
+                  height={55}
+                  objectFit="contain"
+                />
+              </div>
+            ) : (
+              <></>
+            )}
+          </button>
+        ))}
     </div>
   );
 };
