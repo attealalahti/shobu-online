@@ -3,6 +3,10 @@ import Head from "next/head";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/router";
+import dynamic from "next/dynamic";
+const IdGenerator = dynamic(() => import("../components/id-generator"), {
+  ssr: false,
+});
 
 const Home: NextPage = () => {
   const [idText, setIdText] = useState<string>("");
@@ -21,6 +25,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="h-screen w-screen bg-black ">
+        <IdGenerator />
         <form
           className="m-auto flex h-full w-full max-w-md flex-col justify-center gap-6 text-center align-middle"
           onSubmit={joinGame}
