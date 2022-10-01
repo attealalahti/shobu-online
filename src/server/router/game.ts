@@ -1,57 +1,17 @@
 import { createRouter } from "./context";
 import { z } from "zod";
 import { v4 } from "uuid";
-import {
+import type {
   AllBoards,
   Player,
   DbBoards,
-  BoardState,
   IntRange,
-  dbBoardsSchema,
-  playerEnum,
 } from "../../types/game-types";
-
-const createStartingBoard = (): BoardState => {
-  return [
-    [
-      { content: "white", x: 0, y: 0 },
-      { content: "white", x: 1, y: 0 },
-      { content: "white", x: 2, y: 0 },
-      { content: "white", x: 3, y: 0 },
-    ],
-    [
-      { content: "empty", x: 0, y: 1 },
-      { content: "empty", x: 1, y: 1 },
-      { content: "empty", x: 2, y: 1 },
-      { content: "empty", x: 3, y: 1 },
-    ],
-    [
-      { content: "empty", x: 0, y: 2 },
-      { content: "empty", x: 1, y: 2 },
-      { content: "empty", x: 2, y: 2 },
-      { content: "empty", x: 3, y: 2 },
-    ],
-    [
-      { content: "black", x: 0, y: 3 },
-      { content: "black", x: 1, y: 3 },
-      { content: "black", x: 2, y: 3 },
-      { content: "black", x: 3, y: 3 },
-    ],
-  ];
-};
-const createStartingBoards = (): AllBoards => {
-  return [
-    createStartingBoard(),
-    createStartingBoard(),
-    createStartingBoard(),
-    createStartingBoard(),
-  ];
-};
-const formatBoardsForDb = (boards: AllBoards): DbBoards => {
-  return boards.map((board) =>
-    board.map((tiles) => tiles.map((tile) => tile.content))
-  );
-};
+import { dbBoardsSchema, playerEnum } from "../../types/game-types";
+import {
+  formatBoardsForDb,
+  createStartingBoards,
+} from "../../utils/game-utils";
 
 export const gameRouter = createRouter()
   .query("id", {

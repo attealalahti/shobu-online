@@ -34,3 +34,9 @@ export const dbBoardsSchema = z
   .length(4);
 
 export type DbBoards = z.infer<typeof dbBoardsSchema>;
+
+export type StoneCoordinates = {
+  x: IntRange;
+  y: IntRange;
+  boardIndex: IntRange;
+};
