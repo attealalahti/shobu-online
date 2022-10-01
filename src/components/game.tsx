@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
 import { equalBoards } from "../utils/game-utils";
 import useStore from "../store/useStore";
+import usePlayerId from "../utils/usePlayerId";
 
 const Game = () => {
   const [connected, setConnected] = useState<boolean>(false);
@@ -22,26 +23,20 @@ const Game = () => {
   const setCurrentTurn = useStore((state) => state.setCurrentTurn);
   const playerType = useStore((state) => state.playerType);
   const setPlayerType = useStore((state) => state.setPlayerType);
+  const setSelectedStone = useStore((state) => state.setSelectedStone);
 
   router.beforePopState(() => {
     setBoards(undefined);
     return true;
   });
 
-  const storedId = localStorage.getItem("id");
-  const playerId = trpc.useQuery(["game.id"], {
-    enabled: !storedId,
-    initialData: storedId ?? undefined,
-    staleTime: Infinity,
-    cacheTime: Infinity,
-    onSuccess: (data) => localStorage.setItem("id", data),
-  });
+  const playerId = usePlayerId();
 
   trpc.useQuery(
     [
       "game.join",
-      playerId.data
-        ? { playerId: playerId.data, gameId: router.query.gameId as string }
+      playerId
+        ? { playerId, gameId: router.query.gameId as string }
         : undefined,
     ],
     {
@@ -54,6 +49,7 @@ const Game = () => {
           setBoards(data?.boards);
           setCurrentTurn(data?.currentTurn);
           setPlayerType(data?.playerType);
+          setSelectedStone(undefined);
         }
       },
     }
