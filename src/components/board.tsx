@@ -173,16 +173,23 @@ const Board = ({ boardIndex }: BoardProps) => {
         color === "dark" ? "bg-gray-700" : "bg-gray-200"
       } m-auto grid h-64 w-64 grid-cols-4`}
     >
-      {board
-        .flat()
-        .map(({ content, selected, possibleToMoveTo, x, y }, index) => (
+      {(playerType === "white" ? board.flat().reverse() : board.flat()).map(
+        ({ content, selected, possibleToMoveTo, x, y }, index) => (
           <button
             onClick={() => onTileClicked(x, y)}
             key={index}
             className={`${selected ? "bg-blue-400" : ""} ${
               possibleToMoveTo ? "bg-red-400" : ""
-            } ${x < 3 ? "border-r border-black" : ""} ${
-              y < 3 ? "border-b border-black" : ""
+            } ${
+              (x > 0 && playerType === "white") ||
+              (x < 3 && playerType !== "white")
+                ? "border-r border-black"
+                : ""
+            } ${
+              (y > 0 && playerType === "white") ||
+              (y < 3 && playerType !== "white")
+                ? "border-b border-black"
+                : ""
             } h-16 w-16`}
             disabled={
               !(
@@ -205,7 +212,8 @@ const Board = ({ boardIndex }: BoardProps) => {
               </div>
             ) : null}
           </button>
-        ))}
+        )
+      )}
     </div>
   );
 };

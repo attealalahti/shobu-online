@@ -76,11 +76,11 @@ const Game = () => {
           <div className="flex h-full w-full flex-col justify-center align-middle">
             <div className="flex-grow-0 text-white">{`playerType: ${playerType}, currentTurn: ${currentTurn}`}</div>
             <div className="m-auto grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
-              <Board boardIndex={0} />
-              <Board boardIndex={1} />
+              <Board boardIndex={playerType === "white" ? 3 : 0} />
+              <Board boardIndex={playerType === "white" ? 2 : 1} />
               <hr className="col-span-2 m-auto h-1 w-4/5" />
-              <Board boardIndex={2} />
-              <Board boardIndex={3} />
+              <Board boardIndex={playerType === "white" ? 1 : 2} />
+              <Board boardIndex={playerType === "white" ? 0 : 3} />
             </div>
           </div>
         ) : (
