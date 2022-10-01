@@ -5,7 +5,7 @@ import type {
   IntRange,
 } from "../types/game-types";
 
-const copyBoard = (board: BoardState): BoardState => {
+export const copyBoard = (board: BoardState): BoardState => {
   return [
     [
       { ...board[0][0] },
@@ -34,6 +34,7 @@ const copyBoard = (board: BoardState): BoardState => {
   ];
 };
 
+/*
 export const copyAllBoards = (boards: AllBoards): AllBoards => {
   return [
     copyBoard(boards[0]),
@@ -42,6 +43,7 @@ export const copyAllBoards = (boards: AllBoards): AllBoards => {
     copyBoard(boards[3]),
   ];
 };
+*/
 
 export const equalBoards = (
   boards1: AllBoards | undefined,
