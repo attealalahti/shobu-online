@@ -108,7 +108,11 @@ const Board = ({ boardIndex }: BoardProps) => {
               }
               key={index}
               className={`${
-                selected || selectableForAggressiveMove ? "bg-blue-400" : ""
+                selectableForPassiveMove ||
+                selected ||
+                selectableForAggressiveMove
+                  ? "bg-blue-400"
+                  : ""
               } ${possibleToMoveTo ? "bg-red-400" : ""} ${
                 (x > 0 && playerType === "white") ||
                 (x < 3 && playerType !== "white")
