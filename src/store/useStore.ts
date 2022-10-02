@@ -42,6 +42,7 @@ interface State {
     boardIndex: ZeroToThree,
     boardColor: BoardColor
   ) => void;
+  undoPassiveMove: () => void;
   makeAggressiveMove: (
     x: ZeroToThree,
     y: ZeroToThree,
@@ -156,11 +157,31 @@ const useStore = create<State>()((set) => ({
       newBoard[selectedStone.y][selectedStone.x].content = "empty";
       newBoard[selectedStone.y][selectedStone.x].selected = false;
       return {
-        selectedStone: undefined,
         boards: getUpdatedBoards(newBoard, boardIndex, boards),
         moveType: "aggressive",
         passiveMoveBoardColor: boardColor,
         moveVector,
+      };
+    }),
+  undoPassiveMove: () =>
+    set(({ boards, selectedStone, moveVector, playerType }) => {
+      if (!boards || !selectedStone || !moveVector || !playerType) return {};
+      const newBoard = copyBoard(boards[selectedStone.boardIndex]);
+      const dest = getTile(
+        selectedStone.x,
+        selectedStone.y,
+        moveVector,
+        newBoard
+      );
+      if (!dest) return {};
+      newBoard[dest.y][dest.x].content = "empty";
+      newBoard[selectedStone.y][selectedStone.x].content = playerType;
+      return {
+        boards: getUpdatedBoards(newBoard, selectedStone.boardIndex, boards),
+        moveType: "passive",
+        passiveMoveBoardColor: undefined,
+        moveVector: undefined,
+        selectedStone: undefined,
       };
     }),
   makeAggressiveMove: (x, y, boardIndex) =>
@@ -189,6 +210,7 @@ const useStore = create<State>()((set) => ({
         moveType: "passive",
         passiveMoveBoardColor: undefined,
         moveVector: undefined,
+        selectedStone: undefined,
       };
     }),
 }));

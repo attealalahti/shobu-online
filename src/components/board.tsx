@@ -52,7 +52,7 @@ const Board = ({ boardIndex }: BoardProps) => {
     <div
       className={`${
         color === "dark" ? "bg-gray-700" : "bg-gray-200"
-      } m-auto grid h-64 w-64 grid-cols-4`}
+      } m-auto my-10 grid h-64 w-64 grid-cols-4`}
     >
       {(playerType === "white" ? board.flat().reverse() : board.flat()).map(
         (
