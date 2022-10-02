@@ -26,5 +26,8 @@ export default function ws(server: Server) {
         })`
       );
     });
+    socket.on("takeTurn", () => {
+      socket.nsp.emit("turnTaken");
+    });
   });
 }

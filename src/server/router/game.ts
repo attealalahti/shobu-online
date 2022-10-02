@@ -20,7 +20,7 @@ export const gameRouter = createRouter()
       return player.id;
     },
   })
-  .query("join", {
+  .query("data", {
     input: z.object({ playerId: z.string(), gameId: z.string() }).nullish(),
     async resolve({
       input,
@@ -105,5 +105,23 @@ export const gameRouter = createRouter()
         }
       }
       return undefined;
+    },
+  })
+  .mutation("update", {
+    input: z.object({
+      gameId: z.string().nullish(),
+      boards: dbBoardsSchema,
+      currentTurn: playerEnum,
+    }),
+    async resolve({ input, ctx }) {
+      if (input.gameId) {
+        await ctx.prisma.game.update({
+          where: { namespace: input.gameId },
+          data: { boards: input.boards, currentTurn: input.currentTurn },
+        });
+        return true;
+      } else {
+        return false;
+      }
     },
   });

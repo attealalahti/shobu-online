@@ -9,13 +9,16 @@ import useStore from "../store/useStore";
 import usePlayerId from "../utils/usePlayerId";
 import Image from "next/image";
 import backArrow from "../../public/images/back-arrow.svg";
+import { AllBoards, Player } from "../types/game-types";
+import { formatBoardsForDb } from "../utils/game-utils";
 
 const Game = () => {
   const [connected, setConnected] = useState<boolean>(false);
   const router = useRouter();
+  const gameId = router.query.gameId as string;
   const socket: Socket<ServerToClientEvents, ClientToServerEvents> = useMemo(
-    () => io(`/${router.query.gameId}`),
-    [router.query.gameId]
+    () => io(`/${gameId}`),
+    [gameId]
   );
 
   const playerType = useStore((state) => state.playerType);
@@ -31,26 +34,36 @@ const Game = () => {
 
   const playerId = usePlayerId();
 
+  const utils = trpc.useContext();
   trpc.useQuery(
     [
-      "game.join",
+      "game.data",
       playerId
         ? { playerId, gameId: router.query.gameId as string }
         : undefined,
     ],
-    {
-      onSuccess: setGameData,
-    }
+    { onSuccess: setGameData }
   );
+  const mutation = trpc.useMutation("game.update", {
+    onSuccess: async (success) => {
+      if (success) {
+        socket.emit("takeTurn");
+      }
+    },
+  });
+  const updateBoards = (boards: AllBoards, currentTurn: Player) => {
+    mutation.mutate({ gameId, boards: formatBoardsForDb(boards), currentTurn });
+  };
 
   useEffect(() => {
     socket.on("connect", () => setConnected(true));
     socket.on("disconnect", () => setConnected(false));
+    socket.on("turnTaken", () => utils.invalidateQueries("game.data"));
     return () => {
       socket.off("connect");
       socket.off("disconnect");
     };
-  }, [socket]);
+  }, [socket, utils]);
 
   return (
     <div>
@@ -63,11 +76,23 @@ const Game = () => {
         {connected && playerType ? (
           <div className="flex h-full w-full flex-row justify-center align-middle">
             <div className="grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
-              <Board boardIndex={playerType === "white" ? 3 : 0} />
-              <Board boardIndex={playerType === "white" ? 2 : 1} />
+              <Board
+                boardIndex={playerType === "white" ? 3 : 0}
+                updateBoards={updateBoards}
+              />
+              <Board
+                boardIndex={playerType === "white" ? 2 : 1}
+                updateBoards={updateBoards}
+              />
               <hr className="col-span-2 m-auto my-10 h-1 w-4/5" />
-              <Board boardIndex={playerType === "white" ? 1 : 2} />
-              <Board boardIndex={playerType === "white" ? 0 : 3} />
+              <Board
+                boardIndex={playerType === "white" ? 1 : 2}
+                updateBoards={updateBoards}
+              />
+              <Board
+                boardIndex={playerType === "white" ? 0 : 3}
+                updateBoards={updateBoards}
+              />
             </div>
             <div className="flex">
               <div className="m-auto mr-10">

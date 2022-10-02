@@ -1,7 +1,6 @@
 import create from "zustand";
 import type {
   AllBoards,
-  BoardState,
   BoardColor,
   ZeroToThree,
   Move,
@@ -15,6 +14,7 @@ import {
   equalBoards,
   getTile,
   modifyVectorLength,
+  clearMoveTargets,
 } from "../utils/game-utils";
 
 interface State {
@@ -46,7 +46,8 @@ interface State {
   makeAggressiveMove: (
     x: ZeroToThree,
     y: ZeroToThree,
-    boardIndex: ZeroToThree
+    boardIndex: ZeroToThree,
+    updateBoards: (boards: AllBoards, currentTurn: Player) => void
   ) => void;
 }
 
@@ -79,6 +80,10 @@ const useStore = create<State>()((set) => ({
           boards: data?.boards,
           currentTurn: data?.currentTurn,
           playerType: data?.playerType,
+          selectedStone: undefined,
+          moveType: "passive",
+          passiveMoveBoardColor: undefined,
+          moveVector: undefined,
         };
       }
       return {};
@@ -184,7 +189,7 @@ const useStore = create<State>()((set) => ({
         selectedStone: undefined,
       };
     }),
-  makeAggressiveMove: (x, y, boardIndex) =>
+  makeAggressiveMove: (x, y, boardIndex, updateBoards) =>
     set(({ moveVector, boards, playerType, currentTurn }) => {
       if (!moveVector || !boards || !playerType || !currentTurn) return {};
       const board = boards[boardIndex];
@@ -199,14 +204,17 @@ const useStore = create<State>()((set) => ({
       if (afterDest?.content === "empty") {
         newBoard[afterDest.y][afterDest.x].content = destinationContent;
       }
+      const newBoards = getUpdatedBoards(newBoard, boardIndex, boards);
+      const newCurrentTurn =
+        currentTurn === "black"
+          ? "white"
+          : currentTurn === "white"
+          ? "black"
+          : currentTurn;
+      updateBoards(newBoards, newCurrentTurn);
       return {
-        boards: getUpdatedBoards(newBoard, boardIndex, boards),
-        currentTurn:
-          currentTurn === "black"
-            ? "white"
-            : currentTurn === "white"
-            ? "black"
-            : currentTurn,
+        boards: newBoards,
+        currentTurn: newCurrentTurn,
         moveType: "passive",
         passiveMoveBoardColor: undefined,
         moveVector: undefined,
@@ -214,13 +222,5 @@ const useStore = create<State>()((set) => ({
       };
     }),
 }));
-
-const clearMoveTargets = (board: BoardState) => {
-  for (let i: ZeroToThree = 0; i < 4; i = (i + 1) as ZeroToThree) {
-    for (let j: ZeroToThree = 0; j < 4; j = (j + 1) as ZeroToThree) {
-      board[i][j].passiveMoveTarget = false;
-    }
-  }
-};
 
 export default useStore;

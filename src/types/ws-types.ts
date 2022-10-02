@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import type { Player, AllBoards, GameState } from "./game-types";
+export interface ServerToClientEvents {
+  turnTaken: () => void;
+}
 
-export interface ServerToClientEvents {}
-
-export interface ClientToServerEvents {}
+export interface ClientToServerEvents {
+  takeTurn: () => void;
+}
 
 export interface InterServerEvents {}
 

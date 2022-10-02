@@ -1,14 +1,20 @@
 import Image from "next/image";
 import whiteStone from "../../public/images/white_stone.svg";
 import blackStone from "../../public/images/black_stone.svg";
-import type { ZeroToThree, BoardType } from "../types/game-types";
+import type {
+  ZeroToThree,
+  BoardType,
+  AllBoards,
+  Player,
+} from "../types/game-types";
 import useStore from "../store/useStore";
 import { getTile, modifyVectorLength } from "../utils/game-utils";
 
 type BoardProps = {
   boardIndex: ZeroToThree;
+  updateBoards: (boards: AllBoards, currentTurn: Player) => void;
 };
-const Board = ({ boardIndex }: BoardProps) => {
+const Board = ({ boardIndex, updateBoards }: BoardProps) => {
   const color = boardIndex % 2 === 0 ? "dark" : "light";
 
   const board = useStore((state) =>
@@ -40,7 +46,7 @@ const Board = ({ boardIndex }: BoardProps) => {
   };
 
   const onAggressiveMoveClick = (x: ZeroToThree, y: ZeroToThree) => {
-    makeAggressiveMove(x, y, boardIndex);
+    makeAggressiveMove(x, y, boardIndex, updateBoards);
   };
 
   const boardType: BoardType =

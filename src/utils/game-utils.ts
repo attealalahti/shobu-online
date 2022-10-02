@@ -159,3 +159,11 @@ export const getUpdatedBoards = (
   boards[boardIndex] = board;
   return boards;
 };
+
+export const clearMoveTargets = (board: BoardState) => {
+  for (let i: ZeroToThree = 0; i < 4; i = (i + 1) as ZeroToThree) {
+    for (let j: ZeroToThree = 0; j < 4; j = (j + 1) as ZeroToThree) {
+      board[i][j].passiveMoveTarget = false;
+    }
+  }
+};
