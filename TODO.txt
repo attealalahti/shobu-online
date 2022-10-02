@@ -1,3 +1,0 @@
-move head element from dynamic game component to page level
-
-make pushing a stone 2 tiles works
