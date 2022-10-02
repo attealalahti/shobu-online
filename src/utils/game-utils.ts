@@ -2,7 +2,9 @@ import type {
   AllBoards,
   BoardState,
   DbBoards,
+  Tile,
   ZeroToThree,
+  MoveVector,
 } from "../types/game-types";
 
 export const copyBoard = (board: BoardState): BoardState => {
@@ -34,7 +36,6 @@ export const copyBoard = (board: BoardState): BoardState => {
   ];
 };
 
-/*
 export const copyAllBoards = (boards: AllBoards): AllBoards => {
   return [
     copyBoard(boards[0]),
@@ -43,7 +44,6 @@ export const copyAllBoards = (boards: AllBoards): AllBoards => {
     copyBoard(boards[3]),
   ];
 };
-*/
 
 export const equalBoards = (
   boards1: AllBoards | undefined,
@@ -113,4 +113,49 @@ export const formatBoardsForDb = (boards: AllBoards): DbBoards => {
   return boards.map((board) =>
     board.map((tiles) => tiles.map((tile) => tile.content))
   );
+};
+
+export const getTile = (
+  currentX: ZeroToThree,
+  currentY: ZeroToThree,
+  vector: MoveVector,
+  board: BoardState
+): Tile | undefined => {
+  const targetX = currentX + vector.x;
+  const targetY = currentY + vector.y;
+  const column = board[targetY];
+  if (column) {
+    const tile = column[targetX];
+    if (tile) {
+      return tile;
+    }
+  }
+};
+
+export const modifyVectorLength = (
+  vector: MoveVector,
+  amount: number
+): MoveVector => {
+  const getMultiplier = (value: number): number =>
+    value > 0 ? 1 : value < 0 ? -1 : 0;
+  const xMultiplier = getMultiplier(vector.x);
+  const yMultiplier = getMultiplier(vector.y);
+  const x = vector.x + amount * xMultiplier;
+  const y = vector.y + amount * yMultiplier;
+  const differentSigns = (a: number, b: number): boolean =>
+    (a > 0 && b < 0) || (a < 0 && b > 0);
+  return {
+    x: differentSigns(x, xMultiplier) ? 0 : x,
+    y: differentSigns(y, yMultiplier) ? 0 : y,
+  };
+};
+
+export const getUpdatedBoards = (
+  board: BoardState,
+  boardIndex: ZeroToThree,
+  allBoards: AllBoards
+) => {
+  const boards = copyAllBoards(allBoards);
+  boards[boardIndex] = board;
+  return boards;
 };

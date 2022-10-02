@@ -5,7 +5,6 @@ import Board from "../components/board";
 import { ClientToServerEvents, ServerToClientEvents } from "../types/ws-types";
 import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
-import { equalBoards } from "../utils/game-utils";
 import useStore from "../store/useStore";
 import usePlayerId from "../utils/usePlayerId";
 
@@ -17,17 +16,14 @@ const Game = () => {
     [router.query.gameId]
   );
 
-  const boards = useStore((state) => state.boards);
-  const setBoards = useStore((state) => state.setBoards);
   const currentTurn = useStore((state) => state.currentTurn);
-  const setCurrentTurn = useStore((state) => state.setCurrentTurn);
   const playerType = useStore((state) => state.playerType);
-  const setPlayerType = useStore((state) => state.setPlayerType);
-  const setSelectedStone = useStore((state) => state.setSelectedStone);
-  const setMoveType = useStore((state) => state.setMoveType);
+  const moveType = useStore((state) => state.moveType);
+  const clearGameData = useStore((state) => state.clearGameData);
+  const setGameData = useStore((state) => state.setGameData);
 
   router.beforePopState(() => {
-    setBoards(undefined);
+    clearGameData();
     return true;
   });
 
@@ -41,19 +37,7 @@ const Game = () => {
         : undefined,
     ],
     {
-      onSuccess: (data) => {
-        if (
-          !equalBoards(data?.boards, boards) ||
-          data?.currentTurn !== currentTurn ||
-          data?.playerType !== playerType
-        ) {
-          setBoards(data?.boards);
-          setCurrentTurn(data?.currentTurn);
-          setPlayerType(data?.playerType);
-          setSelectedStone(undefined);
-          setMoveType("passive");
-        }
-      },
+      onSuccess: setGameData,
     }
   );
 
@@ -74,9 +58,9 @@ const Game = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="h-screen w-screen bg-black">
-        {connected && playerType && currentTurn && boards ? (
+        {connected && playerType && currentTurn ? (
           <div className="flex h-full w-full flex-col justify-center align-middle">
-            <div className="flex-grow-0 text-white">{`playerType: ${playerType}, currentTurn: ${currentTurn}`}</div>
+            <div className="flex-grow-0 text-white">{`playerType: ${playerType}, currentTurn: ${currentTurn}, moveType: ${moveType}`}</div>
             <div className="m-auto grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
               <Board boardIndex={playerType === "white" ? 3 : 0} />
               <Board boardIndex={playerType === "white" ? 2 : 1} />
