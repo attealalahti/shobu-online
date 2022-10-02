@@ -1,13 +1,14 @@
 import z from "zod";
 export const playerEnum = z.enum(["black", "white", "spectator"]);
 export type Player = z.infer<typeof playerEnum>;
-export type IntRange = 0 | 1 | 2 | 3;
+export type ZeroToThree = 0 | 1 | 2 | 3;
+export type MinusTwoToTwo = -2 | -1 | 0 | 1 | 2;
 export type Tile = {
   content: Player | "empty";
   selected?: boolean;
-  possibleToMoveTo?: boolean;
-  x: IntRange;
-  y: IntRange;
+  passiveMoveTarget?: boolean;
+  x: ZeroToThree;
+  y: ZeroToThree;
 };
 export type BoardState = [
   [Tile, Tile, Tile, Tile],
@@ -36,7 +37,15 @@ export const dbBoardsSchema = z
 export type DbBoards = z.infer<typeof dbBoardsSchema>;
 
 export type StoneCoordinates = {
-  x: IntRange;
-  y: IntRange;
-  boardIndex: IntRange;
+  x: ZeroToThree;
+  y: ZeroToThree;
+  boardIndex: ZeroToThree;
 };
+
+export type Move = "passive" | "aggressive";
+
+export type BoardType = "home" | "enemy";
+
+export type BoardColor = "dark" | "light";
+
+export type MoveVector = { x: number; y: number };

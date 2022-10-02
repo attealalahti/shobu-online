@@ -5,7 +5,7 @@ import type {
   AllBoards,
   Player,
   DbBoards,
-  IntRange,
+  ZeroToThree,
 } from "../../types/game-types";
 import { dbBoardsSchema, playerEnum } from "../../types/game-types";
 import {
@@ -76,12 +76,12 @@ export const gameRouter = createRouter()
           dbBoardsSchema.parse(dbBoards);
           playerEnum.parse(game.currentTurn);
           for (
-            let boardIndex: IntRange = 0;
+            let boardIndex: ZeroToThree = 0;
             boardIndex < 4;
-            boardIndex = (boardIndex + 1) as IntRange
+            boardIndex = (boardIndex + 1) as ZeroToThree
           ) {
-            for (let y: IntRange = 0; y < 4; y = (y + 1) as IntRange) {
-              for (let x: IntRange = 0; x < 4; x = (x + 1) as IntRange) {
+            for (let y: ZeroToThree = 0; y < 4; y = (y + 1) as ZeroToThree) {
+              for (let x: ZeroToThree = 0; x < 4; x = (x + 1) as ZeroToThree) {
                 const currentBoard = dbBoards[boardIndex];
                 if (currentBoard) {
                   const currentTileColumn = currentBoard[y];

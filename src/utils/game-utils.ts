@@ -2,7 +2,7 @@ import type {
   AllBoards,
   BoardState,
   DbBoards,
-  IntRange,
+  ZeroToThree,
 } from "../types/game-types";
 
 export const copyBoard = (board: BoardState): BoardState => {
@@ -52,12 +52,16 @@ export const equalBoards = (
   if (!boards1 || !boards2) return false;
   let result = true;
   for (
-    let boardIndex: IntRange = 0;
+    let boardIndex: ZeroToThree = 0;
     boardIndex < 4 && result;
-    boardIndex = (boardIndex + 1) as IntRange
+    boardIndex = (boardIndex + 1) as ZeroToThree
   ) {
-    for (let y: IntRange = 0; y < 4 && result; y = (y + 1) as IntRange) {
-      for (let x: IntRange = 0; x < 4 && result; x = (x + 1) as IntRange) {
+    for (let y: ZeroToThree = 0; y < 4 && result; y = (y + 1) as ZeroToThree) {
+      for (
+        let x: ZeroToThree = 0;
+        x < 4 && result;
+        x = (x + 1) as ZeroToThree
+      ) {
         result =
           boards1[boardIndex][y][x].content ===
           boards2[boardIndex][y][x].content;

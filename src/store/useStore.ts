@@ -2,7 +2,10 @@ import create from "zustand";
 import type {
   AllBoards,
   BoardState,
-  IntRange,
+  BoardColor,
+  ZeroToThree,
+  Move,
+  MoveVector,
   Player,
   StoneCoordinates,
 } from "../types/game-types";
@@ -12,12 +15,18 @@ interface State {
   boards: AllBoards | undefined;
   currentTurn: Player | undefined;
   selectedStone: StoneCoordinates | undefined;
-  setBoard: (board: BoardState, index: IntRange) => void;
+  moveType: Move;
+  passiveMoveBoardColor: BoardColor | undefined;
+  moveVector: MoveVector | undefined;
+  setBoard: (board: BoardState, index: ZeroToThree) => void;
   setBoards: (boards: AllBoards | undefined) => void;
   endTurn: () => void;
   setCurrentTurn: (currentTurn: Player | undefined) => void;
   setSelectedStone: (selectedStone: StoneCoordinates | undefined) => void;
   setPlayerType: (playerType: Player | undefined) => void;
+  setMoveType: (moveType: Move) => void;
+  setPassiveMoveBoardColor: (color: BoardColor | undefined) => void;
+  setMoveVector: (moveVector: MoveVector | undefined) => void;
 }
 
 const useStore = create<State>()((set) => ({
@@ -25,6 +34,9 @@ const useStore = create<State>()((set) => ({
   boards: undefined,
   currentTurn: undefined,
   selectedStone: undefined,
+  moveType: "passive",
+  passiveMoveBoardColor: undefined,
+  moveVector: undefined,
   setBoard: (board, index) =>
     set((state) => {
       if (!state.boards) return {};
@@ -34,15 +46,26 @@ const useStore = create<State>()((set) => ({
   setBoards: (boards) => set(() => ({ boards })),
   endTurn: () =>
     set((state) => {
-      if (state.currentTurn === "black") {
-        return { currentTurn: "white" };
-      } else if (state.currentTurn === "white") {
-        return { currentTurn: "black" };
-      } else return {};
+      const currentTurn =
+        state.currentTurn === "black"
+          ? "white"
+          : state.currentTurn === "white"
+          ? "black"
+          : state.currentTurn;
+      return {
+        currentTurn,
+        moveType: "passive",
+        passiveMoveBoardColor: undefined,
+        moveVector: undefined,
+      };
     }),
   setCurrentTurn: (currentTurn) => set(() => ({ currentTurn })),
   setSelectedStone: (selectedStone) => set(() => ({ selectedStone })),
   setPlayerType: (playerType) => set(() => ({ playerType })),
+  setMoveType: (moveType) => set(() => ({ moveType })),
+  setPassiveMoveBoardColor: (color) =>
+    set(() => ({ passiveMoveBoardColor: color })),
+  setMoveVector: (moveVector) => set(() => ({ moveVector })),
 }));
 
 export default useStore;

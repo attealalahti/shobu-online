@@ -24,6 +24,7 @@ const Game = () => {
   const playerType = useStore((state) => state.playerType);
   const setPlayerType = useStore((state) => state.setPlayerType);
   const setSelectedStone = useStore((state) => state.setSelectedStone);
+  const setMoveType = useStore((state) => state.setMoveType);
 
   router.beforePopState(() => {
     setBoards(undefined);
@@ -50,6 +51,7 @@ const Game = () => {
           setCurrentTurn(data?.currentTurn);
           setPlayerType(data?.playerType);
           setSelectedStone(undefined);
+          setMoveType("passive");
         }
       },
     }
