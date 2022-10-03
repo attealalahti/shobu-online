@@ -45,7 +45,7 @@ export const copyAllBoards = (boards: AllBoards): AllBoards => {
   ];
 };
 
-export const equalBoards = (
+export const areBoardsEqual = (
   boards1: AllBoards | undefined,
   boards2: AllBoards | undefined
 ): boolean => {

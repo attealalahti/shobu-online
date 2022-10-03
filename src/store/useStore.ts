@@ -11,7 +11,7 @@ import type {
 import {
   getUpdatedBoards,
   copyBoard,
-  equalBoards,
+  areBoardsEqual,
   getTile,
   modifyVectorLength,
   clearMoveTargets,
@@ -20,6 +20,7 @@ import {
 interface State {
   playerType: Player | undefined;
   boards: AllBoards | undefined;
+  boardsBeforePassiveMove: AllBoards | undefined;
   currentTurn: Player | undefined;
   selectedStone: StoneCoordinates | undefined;
   moveType: Move;
@@ -54,6 +55,7 @@ interface State {
 const useStore = create<State>()((set) => ({
   playerType: undefined,
   boards: undefined,
+  boardsBeforePassiveMove: undefined,
   currentTurn: undefined,
   selectedStone: undefined,
   moveType: "passive",
@@ -63,6 +65,7 @@ const useStore = create<State>()((set) => ({
     set(() => ({
       playerType: undefined,
       boards: undefined,
+      boardsBeforePassiveMove: undefined,
       currentTurn: undefined,
       selectedStone: undefined,
       moveType: "passive",
@@ -72,12 +75,16 @@ const useStore = create<State>()((set) => ({
   setGameData: (data) =>
     set((state) => {
       if (
-        !equalBoards(data?.boards, state.boards) ||
+        !areBoardsEqual(
+          data?.boards,
+          state.boardsBeforePassiveMove ?? state.boards
+        ) ||
         data?.currentTurn !== state.currentTurn ||
         data?.playerType !== state.playerType
       ) {
         return {
           boards: data?.boards,
+          boardsBeforePassiveMove: undefined,
           currentTurn: data?.currentTurn,
           playerType: data?.playerType,
           selectedStone: undefined,
@@ -163,6 +170,7 @@ const useStore = create<State>()((set) => ({
       newBoard[selectedStone.y][selectedStone.x].selected = false;
       return {
         boards: getUpdatedBoards(newBoard, boardIndex, boards),
+        boardsBeforePassiveMove: boards,
         moveType: "aggressive",
         passiveMoveBoardColor: boardColor,
         moveVector,
@@ -183,6 +191,7 @@ const useStore = create<State>()((set) => ({
       newBoard[selectedStone.y][selectedStone.x].content = playerType;
       return {
         boards: getUpdatedBoards(newBoard, selectedStone.boardIndex, boards),
+        boardsBeforePassiveMove: undefined,
         moveType: "passive",
         passiveMoveBoardColor: undefined,
         moveVector: undefined,
@@ -214,6 +223,7 @@ const useStore = create<State>()((set) => ({
       updateBoards(newBoards, newCurrentTurn);
       return {
         boards: newBoards,
+        boardsBeforePassiveMove: undefined,
         currentTurn: newCurrentTurn,
         moveType: "passive",
         passiveMoveBoardColor: undefined,
