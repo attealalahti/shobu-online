@@ -38,7 +38,7 @@ const Game = () => {
   trpc.useQuery(
     [
       "game.data",
-      playerId
+      playerId && gameId
         ? { playerId, gameId: router.query.gameId as string }
         : undefined,
     ],
