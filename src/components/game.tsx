@@ -62,6 +62,7 @@ const Game = () => {
     return () => {
       socket.off("connect");
       socket.off("disconnect");
+      socket.off("turnTaken");
     };
   }, [socket, utils]);
 

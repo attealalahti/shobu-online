@@ -79,10 +79,11 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
             moveType === "aggressive" &&
             content === playerType &&
             passiveMoveBoardColor !== undefined &&
-            color !== passiveMoveBoardColor;
+            color !== passiveMoveBoardColor &&
+            moveVector;
 
           let canMakeAggressiveMove = false;
-          if (moveVector) {
+          if (aggressiveMoveToBeSelected) {
             const targetTile = getTile(x, y, moveVector, board);
             const afterTargetVector = modifyVectorLength(moveVector, 1);
             const tileAfterTarget = getTile(x, y, afterTargetVector, board);
@@ -92,16 +93,29 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
                 ? getTile(x, y, beforeTargetVector, board)
                 : undefined;
             const canMoveToTarget =
-              targetTile !== undefined && targetTile.content !== playerType;
+              targetTile !== undefined &&
+              ((targetTile.content === "empty" &&
+                (tileBeforeTarget === undefined ||
+                  tileBeforeTarget.content === "empty")) ||
+                (targetTile.content === enemyPlayerType &&
+                  (tileBeforeTarget === undefined ||
+                    tileBeforeTarget.content === "empty")) ||
+                (targetTile.content === "empty" &&
+                  tileBeforeTarget?.content === enemyPlayerType));
+            const roomToPush =
+              tileAfterTarget?.content === "empty" ||
+              tileAfterTarget === undefined;
             const targetCanBePushed =
-              targetTile?.content === enemyPlayerType &&
-              (tileAfterTarget?.content === "empty" ||
-                tileAfterTarget === undefined);
+              ((targetTile?.content === enemyPlayerType &&
+                (tileBeforeTarget === undefined ||
+                  tileBeforeTarget.content === "empty")) ||
+                (tileBeforeTarget?.content === enemyPlayerType &&
+                  targetTile?.content === "empty")) &&
+              roomToPush;
+
             canMakeAggressiveMove =
               canMoveToTarget &&
-              (targetCanBePushed || targetTile.content === "empty") &&
-              (tileBeforeTarget === undefined ||
-                tileBeforeTarget.content === "empty");
+              (targetCanBePushed || targetTile.content === "empty");
           }
           const selectableForAggressiveMove =
             aggressiveMoveToBeSelected && canMakeAggressiveMove;

@@ -205,13 +205,24 @@ const useStore = create<State>()((set) => ({
       const dest = getTile(x, y, moveVector, board);
       if (!dest) return {};
       const newBoard = copyBoard(board);
-      const destinationContent = dest.content;
+      const beforeDestVector = modifyVectorLength(moveVector, -1);
+      const beforeDest =
+        beforeDestVector.x !== 0 || beforeDestVector.y !== 0
+          ? getTile(x, y, beforeDestVector, board)
+          : undefined;
+      const destinationContent =
+        dest.content === "empty" && beforeDest
+          ? beforeDest.content
+          : dest.content;
       newBoard[y][x].content = "empty";
       newBoard[dest.y][dest.x].content = playerType;
       const afterDestVector = modifyVectorLength(moveVector, 1);
       const afterDest = getTile(x, y, afterDestVector, board);
       if (afterDest?.content === "empty") {
         newBoard[afterDest.y][afterDest.x].content = destinationContent;
+      }
+      if (beforeDest) {
+        newBoard[beforeDest.y][beforeDest.x].content = "empty";
       }
       const newBoards = getUpdatedBoards(newBoard, boardIndex, boards);
       const newCurrentTurn =

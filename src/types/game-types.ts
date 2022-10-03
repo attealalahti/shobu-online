@@ -2,14 +2,15 @@ import z from "zod";
 export const playerEnum = z.enum(["black", "white", "spectator"]);
 export type Player = z.infer<typeof playerEnum>;
 export type ZeroToThree = 0 | 1 | 2 | 3;
-export type MinusTwoToTwo = -2 | -1 | 0 | 1 | 2;
 export type Tile = {
   content: Player | "empty";
   selected?: boolean;
   passiveMoveTarget?: boolean;
+  canMakeAggressiveMove?: boolean;
   x: ZeroToThree;
   y: ZeroToThree;
 };
+
 export type BoardState = [
   [Tile, Tile, Tile, Tile],
   [Tile, Tile, Tile, Tile],
