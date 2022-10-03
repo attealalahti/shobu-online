@@ -34,6 +34,8 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
   );
   const makePassiveMove = useStore((state) => state.makePassiveMove);
   const makeAggressiveMove = useStore((state) => state.makeAggressiveMove);
+  const setPreview = useStore((state) => state.setPreview);
+  const clearPreview = useStore((state) => state.clearPreview);
 
   if (!board || !playerType) return null;
 
@@ -46,6 +48,7 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
   };
 
   const onAggressiveMoveClick = (x: ZeroToThree, y: ZeroToThree) => {
+    clearPreview(boardIndex);
     makeAggressiveMove(x, y, boardIndex, updateBoards);
   };
 
@@ -62,7 +65,14 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
     >
       {(playerType === "white" ? board.flat().reverse() : board.flat()).map(
         (
-          { content, selected, passiveMoveTarget: possibleToMoveTo, x, y },
+          {
+            content,
+            selected,
+            passiveMoveTarget: possibleToMoveTo,
+            preview,
+            x,
+            y,
+          },
           index
         ) => {
           const selectableForPassiveMove =
@@ -126,6 +136,16 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
                   ? onPassiveMoveClick(x, y)
                   : onAggressiveMoveClick(x, y)
               }
+              onMouseOver={() => {
+                if (selectableForAggressiveMove) {
+                  setPreview(x, y, boardIndex);
+                }
+              }}
+              onMouseOut={() => {
+                if (selectableForAggressiveMove) {
+                  clearPreview(boardIndex);
+                }
+              }}
               key={index}
               className={`${
                 selectableForPassiveMove ||
@@ -152,11 +172,24 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
                 )
               }
             >
-              {content !== "empty" ? (
-                <div className="m-auto flex h-16 w-16 justify-center align-middle">
+              {(preview !== undefined && preview !== "empty") ||
+              (preview === undefined && content !== "empty") ? (
+                <div
+                  className={`${
+                    preview ? "opacity-50" : ""
+                  } m-auto flex h-16 w-16 justify-center align-middle`}
+                >
                   <Image
-                    src={content === "white" ? whiteStone : blackStone}
-                    alt={content}
+                    src={
+                      preview
+                        ? preview === "white"
+                          ? whiteStone
+                          : blackStone
+                        : content === "white"
+                        ? whiteStone
+                        : blackStone
+                    }
+                    alt={preview ?? content}
                     width={55}
                     height={55}
                     objectFit="contain"
