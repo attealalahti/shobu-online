@@ -15,6 +15,7 @@ import {
   getTile,
   modifyVectorLength,
   clearMoveTargets,
+  getBoardsWithoutPreviews,
 } from "../utils/game-utils";
 
 interface State {
@@ -51,7 +52,7 @@ interface State {
     updateBoards: (boards: AllBoards, currentTurn: Player) => void
   ) => void;
   setPreview: (x: ZeroToThree, y: ZeroToThree, boardIndex: ZeroToThree) => void;
-  clearPreview: (boardIndex: ZeroToThree) => void;
+  clearPreview: () => void;
 }
 
 const useStore = create<State>()((set) => ({
@@ -192,7 +193,11 @@ const useStore = create<State>()((set) => ({
       newBoard[dest.y][dest.x].content = "empty";
       newBoard[selectedStone.y][selectedStone.x].content = playerType;
       return {
-        boards: getUpdatedBoards(newBoard, selectedStone.boardIndex, boards),
+        boards: getUpdatedBoards(
+          newBoard,
+          selectedStone.boardIndex,
+          getBoardsWithoutPreviews(boards)
+        ),
         boardsBeforePassiveMove: undefined,
         moveType: "passive",
         passiveMoveBoardColor: undefined,
@@ -208,7 +213,7 @@ const useStore = create<State>()((set) => ({
         y,
         boardIndex,
         moveVector,
-        boards,
+        getBoardsWithoutPreviews(boards),
         playerType
       );
       if (!newBoards) return {};
@@ -244,14 +249,10 @@ const useStore = create<State>()((set) => ({
       if (!newBoards) return {};
       return { boards: newBoards };
     }),
-  clearPreview: (boardIndex) =>
+  clearPreview: () =>
     set(({ boards }) => {
       if (!boards) return {};
-      const newBoard = copyBoard(boards[boardIndex]);
-      newBoard.forEach((row) =>
-        row.forEach((tile) => (newBoard[tile.y][tile.x].preview = undefined))
-      );
-      return { boards: getUpdatedBoards(newBoard, boardIndex, boards) };
+      return { boards: getBoardsWithoutPreviews(boards) };
     }),
 }));
 

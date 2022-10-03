@@ -55,6 +55,8 @@ const Game = () => {
     mutation.mutate({ gameId, boards: formatBoardsForDb(boards), currentTurn });
   };
 
+  onblur = undoPassiveMove;
+
   useEffect(() => {
     socket.on("connect", () => setConnected(true));
     socket.on("disconnect", () => setConnected(false));

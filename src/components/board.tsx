@@ -48,7 +48,7 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
   };
 
   const onAggressiveMoveClick = (x: ZeroToThree, y: ZeroToThree) => {
-    clearPreview(boardIndex);
+    clearPreview();
     makeAggressiveMove(x, y, boardIndex, updateBoards);
   };
 
@@ -143,7 +143,7 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
               }}
               onMouseOut={() => {
                 if (selectableForAggressiveMove) {
-                  clearPreview(boardIndex);
+                  clearPreview();
                 }
               }}
               key={index}
