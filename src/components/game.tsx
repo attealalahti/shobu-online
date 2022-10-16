@@ -24,6 +24,7 @@ const Game = () => {
   const clearGameData = useStore((state) => state.clearGameData);
   const setGameData = useStore((state) => state.setGameData);
   const moveType = useStore((state) => state.moveType);
+  const winner = useStore((state) => state.winner);
   const undoPassiveMove = useStore((state) => state.undoPassiveMove);
   onblur = undoPassiveMove;
 
@@ -70,42 +71,45 @@ const Game = () => {
     <div>
       <main className="h-screen w-screen bg-black">
         {connected && playerType ? (
-          <div className="flex h-full w-full flex-row justify-center align-middle">
-            <div className="grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
-              <Board
-                boardIndex={playerType === "white" ? 3 : 0}
-                updateBoards={updateBoards}
-              />
-              <Board
-                boardIndex={playerType === "white" ? 2 : 1}
-                updateBoards={updateBoards}
-              />
-              <hr className="col-span-2 m-auto my-10 h-1 w-4/5" />
-              <Board
-                boardIndex={playerType === "white" ? 1 : 2}
-                updateBoards={updateBoards}
-              />
-              <Board
-                boardIndex={playerType === "white" ? 0 : 3}
-                updateBoards={updateBoards}
-              />
-            </div>
-            <div className="flex">
-              <div className="m-auto mr-10">
-                <button
-                  className={`${
-                    moveType === "passive" ? "opacity-30" : ""
-                  } rounded bg-white p-5`}
-                  disabled={moveType === "passive"}
-                  onClick={undoPassiveMove}
-                >
-                  <Image
-                    src={backArrow}
-                    alt="Cancel passive move"
-                    width={60}
-                    height={60}
-                  />
-                </button>
+          <div>
+            <div className="text-white">{`${winner}`}</div>
+            <div className="flex h-full w-full flex-row justify-center align-middle">
+              <div className="grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
+                <Board
+                  boardIndex={playerType === "white" ? 3 : 0}
+                  updateBoards={updateBoards}
+                />
+                <Board
+                  boardIndex={playerType === "white" ? 2 : 1}
+                  updateBoards={updateBoards}
+                />
+                <hr className="col-span-2 m-auto my-10 h-1 w-4/5" />
+                <Board
+                  boardIndex={playerType === "white" ? 1 : 2}
+                  updateBoards={updateBoards}
+                />
+                <Board
+                  boardIndex={playerType === "white" ? 0 : 3}
+                  updateBoards={updateBoards}
+                />
+              </div>
+              <div className="flex">
+                <div className="m-auto mr-10">
+                  <button
+                    className={`${
+                      moveType === "passive" ? "opacity-30" : ""
+                    } rounded bg-white p-5`}
+                    disabled={moveType === "passive"}
+                    onClick={undoPassiveMove}
+                  >
+                    <Image
+                      src={backArrow}
+                      alt="Cancel passive move"
+                      width={60}
+                      height={60}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

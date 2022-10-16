@@ -16,6 +16,7 @@ import {
   modifyVectorLength,
   clearMoveTargets,
   getBoardsWithoutPreviews,
+  findWinner,
 } from "../utils/game-utils";
 
 interface State {
@@ -27,6 +28,7 @@ interface State {
   moveType: Move;
   passiveMoveBoardColor: BoardColor | undefined;
   moveVector: MoveVector | undefined;
+  winner: Player | undefined;
   clearGameData: () => void;
   setGameData: (
     data:
@@ -64,6 +66,7 @@ const useStore = create<State>()((set) => ({
   moveType: "passive",
   passiveMoveBoardColor: undefined,
   moveVector: undefined,
+  winner: undefined,
   clearGameData: () =>
     set(() => ({
       playerType: undefined,
@@ -74,6 +77,7 @@ const useStore = create<State>()((set) => ({
       moveType: "passive",
       passiveMoveBoardColor: undefined,
       moveVector: undefined,
+      winner: undefined,
     })),
   setGameData: (data) =>
     set((state) => {
@@ -94,6 +98,7 @@ const useStore = create<State>()((set) => ({
           moveType: "passive",
           passiveMoveBoardColor: undefined,
           moveVector: undefined,
+          winner: findWinner(data?.boards),
         };
       }
       return {};
@@ -138,8 +143,7 @@ const useStore = create<State>()((set) => ({
             { x: -2, y: 2 },
           ],
         ];
-        vectors.forEach((tuple) => {
-          const [short, long] = tuple;
+        vectors.forEach(([short, long]) => {
           const nearTile = getTile(x, y, short, newBoard);
           if (nearTile?.content === "empty") {
             newBoard[nearTile.y][nearTile.x].passiveMoveTarget = true;
@@ -232,6 +236,7 @@ const useStore = create<State>()((set) => ({
         passiveMoveBoardColor: undefined,
         moveVector: undefined,
         selectedStone: undefined,
+        winner: findWinner(newBoards),
       };
     }),
   setPreview: (x, y, boardIndex) =>

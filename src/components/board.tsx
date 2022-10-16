@@ -36,6 +36,7 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
   const makeAggressiveMove = useStore((state) => state.makeAggressiveMove);
   const setPreview = useStore((state) => state.setPreview);
   const clearPreview = useStore((state) => state.clearPreview);
+  const winner = useStore((state) => state.winner);
 
   if (!board || !playerType) return null;
 
@@ -76,6 +77,7 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
           index
         ) => {
           const selectableForPassiveMove =
+            !winner &&
             moveType === "passive" &&
             boardType === "home" &&
             !selectedStone &&
@@ -86,6 +88,7 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
             selectedStone && (board[y][x].selected || possibleToMoveTo);
 
           const aggressiveMoveToBeSelected =
+            !winner &&
             moveType === "aggressive" &&
             content === playerType &&
             passiveMoveBoardColor !== undefined &&

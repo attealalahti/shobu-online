@@ -5,6 +5,7 @@ import type {
   Tile,
   ZeroToThree,
   MoveVector,
+  Player,
 } from "../types/game-types";
 
 export const copyBoard = (board: BoardState): BoardState => {
@@ -174,4 +175,19 @@ export const getBoardsWithoutPreviews = (boards: AllBoards) => {
     board.forEach((row) => row.forEach((tile) => (tile.preview = undefined)))
   );
   return newBoards;
+};
+
+export const findWinner = (
+  boards: AllBoards | undefined
+): Player | undefined => {
+  if (!boards) return;
+  for (const board of boards) {
+    if (!board.some((row) => row.some((tile) => tile.content === "black"))) {
+      return "white";
+    } else if (
+      !board.some((row) => row.some((tile) => tile.content === "white"))
+    ) {
+      return "black";
+    }
+  }
 };
