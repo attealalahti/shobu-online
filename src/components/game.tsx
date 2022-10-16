@@ -10,6 +10,8 @@ import Image from "next/image";
 import backArrow from "../../public/images/back-arrow.svg";
 import { AllBoards, Player } from "../types/game-types";
 import { formatBoardsForDb } from "../utils/game-utils";
+import Modal from "./modal";
+import Link from "next/link";
 
 const Game = () => {
   const [connected, setConnected] = useState<boolean>(false);
@@ -118,6 +120,25 @@ const Game = () => {
             <div className="m-auto text-lg text-white">Loading...</div>
           </div>
         )}
+        <Modal open={winner !== undefined}>
+          <div className="flex h-full w-full justify-center text-white">
+            <div className="m-auto rounded-xl border border-white bg-black p-10">
+              <h2 className="mb-10 text-center text-3xl uppercase">
+                {`${winner} wins`}
+              </h2>
+              <div className="flex flex-row flex-wrap justify-center gap-5">
+                <button className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black">
+                  New Game
+                </button>
+                <Link href="/">
+                  <span className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black">
+                    Return To Menu
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </main>
     </div>
   );
