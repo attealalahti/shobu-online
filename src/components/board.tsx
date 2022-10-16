@@ -122,10 +122,12 @@ const Board = ({ boardIndex, updateBoards }: BoardProps) => {
                 (tileBeforeTarget?.content === enemyPlayerType &&
                   targetTile?.content === "empty")) &&
               roomToPush;
-
+            const nothingInTheWay =
+              targetTile?.content === "empty" &&
+              (tileBeforeTarget === undefined ||
+                tileBeforeTarget.content === "empty");
             canMakeAggressiveMove =
-              canMoveToTarget &&
-              (targetCanBePushed || targetTile.content === "empty");
+              canMoveToTarget && (targetCanBePushed || nothingInTheWay);
           }
           const selectableForAggressiveMove =
             aggressiveMoveToBeSelected && canMakeAggressiveMove;
