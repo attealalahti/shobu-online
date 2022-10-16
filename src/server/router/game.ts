@@ -1,17 +1,14 @@
 import { createRouter } from "./context";
 import { z } from "zod";
 import { v4 } from "uuid";
-import type {
-  AllBoards,
-  Player,
-  DbBoards,
-  ZeroToThree,
-} from "../../types/game-types";
+import type { AllBoards, Player, DbBoards } from "../../types/game-types";
 import { dbBoardsSchema, playerEnum } from "../../types/game-types";
 import {
   formatBoardsForDb,
   createStartingBoards,
+  formatBoardsForClient,
 } from "../../utils/game-utils";
+import { TRPCError } from "@trpc/server";
 
 export const gameRouter = createRouter()
   .query("id", {
@@ -71,30 +68,10 @@ export const gameRouter = createRouter()
           }
         }
         try {
-          const boards = createStartingBoards();
           const dbBoards = game.boards as DbBoards;
           dbBoardsSchema.parse(dbBoards);
           playerEnum.parse(game.currentTurn);
-          for (
-            let boardIndex: ZeroToThree = 0;
-            boardIndex < 4;
-            boardIndex = (boardIndex + 1) as ZeroToThree
-          ) {
-            for (let y: ZeroToThree = 0; y < 4; y = (y + 1) as ZeroToThree) {
-              for (let x: ZeroToThree = 0; x < 4; x = (x + 1) as ZeroToThree) {
-                const currentBoard = dbBoards[boardIndex];
-                if (currentBoard) {
-                  const currentTileColumn = currentBoard[y];
-                  if (currentTileColumn) {
-                    const currentTile = currentTileColumn[x];
-                    if (currentTile) {
-                      boards[boardIndex][y][x].content = currentTile;
-                    }
-                  }
-                }
-              }
-            }
-          }
+          const boards = formatBoardsForClient(dbBoards);
           return {
             playerType,
             currentTurn: game.currentTurn as Player,
@@ -123,5 +100,47 @@ export const gameRouter = createRouter()
       } else {
         return false;
       }
+    },
+  })
+  .mutation("newGame", {
+    input: z.object({ gameId: z.string(), playerId: z.string().nullish() }),
+    async resolve({ input, ctx }) {
+      const game = await ctx.prisma.game.findFirst({
+        where: { namespace: input.gameId },
+      });
+      if (!game) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "No game found" });
+      } else if (
+        input.playerId !== game.black &&
+        input.playerId !== game.white
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Id does not match player ids",
+        });
+      }
+      const swapColors = Math.random() > 0.5;
+      const newBoards = formatBoardsForDb(createStartingBoards());
+      const newGame = await ctx.prisma.game.update({
+        where: { namespace: input.gameId },
+        data: {
+          currentTurn: "black",
+          boards: newBoards,
+          black: swapColors ? game.white : game.black,
+          white: swapColors ? game.black : game.white,
+        },
+      });
+      try {
+        dbBoardsSchema.parse(newGame.boards);
+      } catch (err) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: err });
+      }
+      const playerType: Player =
+        newGame.black === input.playerId ? "black" : "white";
+      return {
+        playerType: playerType as Player,
+        currentTurn: newGame.currentTurn as Player,
+        boards: formatBoardsForClient(newGame.boards as DbBoards),
+      };
     },
   });

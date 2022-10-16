@@ -116,6 +116,31 @@ export const formatBoardsForDb = (boards: AllBoards): DbBoards => {
   );
 };
 
+export const formatBoardsForClient = (dbBoards: DbBoards): AllBoards => {
+  const boards = createStartingBoards();
+  for (
+    let boardIndex: ZeroToThree = 0;
+    boardIndex < 4;
+    boardIndex = (boardIndex + 1) as ZeroToThree
+  ) {
+    for (let y: ZeroToThree = 0; y < 4; y = (y + 1) as ZeroToThree) {
+      for (let x: ZeroToThree = 0; x < 4; x = (x + 1) as ZeroToThree) {
+        const currentBoard = dbBoards[boardIndex];
+        if (currentBoard) {
+          const currentTileColumn = currentBoard[y];
+          if (currentTileColumn) {
+            const currentTile = currentTileColumn[x];
+            if (currentTile) {
+              boards[boardIndex][y][x].content = currentTile;
+            }
+          }
+        }
+      }
+    }
+  }
+  return boards;
+};
+
 export const getTile = (
   currentX: ZeroToThree,
   currentY: ZeroToThree,

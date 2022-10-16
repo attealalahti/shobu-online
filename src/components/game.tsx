@@ -47,7 +47,7 @@ const Game = () => {
     ],
     { onSuccess: setGameData }
   );
-  const mutation = trpc.useMutation("game.update", {
+  const update = trpc.useMutation("game.update", {
     onSuccess: (success) => {
       if (success) {
         socket.emit("takeTurn");
@@ -55,7 +55,17 @@ const Game = () => {
     },
   });
   const updateBoards = (boards: AllBoards, currentTurn: Player) => {
-    mutation.mutate({ gameId, boards: formatBoardsForDb(boards), currentTurn });
+    update.mutate({ gameId, boards: formatBoardsForDb(boards), currentTurn });
+  };
+
+  const newGame = trpc.useMutation("game.newGame", {
+    onSuccess: (data) => {
+      setGameData(data);
+      socket.emit("takeTurn");
+    },
+  });
+  const startNewGame = () => {
+    newGame.mutate({ playerId, gameId });
   };
 
   useEffect(() => {
@@ -74,7 +84,6 @@ const Game = () => {
       <main className="h-screen w-screen bg-black">
         {connected && playerType ? (
           <div>
-            <div className="text-white">{`${winner}`}</div>
             <div className="flex h-full w-full flex-row justify-center align-middle">
               <div className="grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
                 <Board
@@ -127,9 +136,14 @@ const Game = () => {
                 {`${winner} wins`}
               </h2>
               <div className="flex flex-row flex-wrap justify-center gap-5">
-                <button className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black">
-                  New Game
-                </button>
+                {(playerType === "black" || playerType === "white") && (
+                  <button
+                    className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black"
+                    onClick={startNewGame}
+                  >
+                    New Game
+                  </button>
+                )}
                 <Link href="/">
                   <span className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black">
                     Return To Menu
