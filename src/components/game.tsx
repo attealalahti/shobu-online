@@ -82,7 +82,7 @@ const Game = () => {
   return (
     <div>
       <main className="h-screen w-screen bg-black">
-        {connected && playerType ? (
+        {connected && playerType && !newGame.isLoading ? (
           <div>
             <div className="flex h-full w-full flex-row justify-center align-middle">
               <div className="grid w-full max-w-5xl flex-auto grid-cols-2 p-10">
@@ -129,7 +129,7 @@ const Game = () => {
             <div className="m-auto text-lg text-white">Loading...</div>
           </div>
         )}
-        <Modal open={winner !== undefined}>
+        <Modal open={winner !== undefined && !newGame.isLoading}>
           <div className="flex h-full w-full justify-center text-white">
             <div className="m-auto rounded-xl border border-white bg-black p-10">
               <h2 className="mb-10 text-center text-3xl uppercase">
