@@ -2,7 +2,7 @@
 import { createRouter } from "./context";
 import superjson from "superjson";
 
-import { gameRouter } from "./game";
+import { gameRouter } from "./game-router";
 
 export const appRouter = createRouter()
   .transformer(superjson)
