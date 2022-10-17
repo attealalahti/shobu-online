@@ -6,7 +6,6 @@ export type Tile = {
   content: Player | "empty";
   selected?: boolean;
   passiveMoveTarget?: boolean;
-  preview?: Player | "empty";
   x: ZeroToThree;
   y: ZeroToThree;
 };

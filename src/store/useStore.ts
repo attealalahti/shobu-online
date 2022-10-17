@@ -15,7 +15,6 @@ import {
   getTile,
   modifyVectorLength,
   clearMoveTargets,
-  getBoardsWithoutPreviews,
   findWinner,
 } from "../utils/game-utils";
 
@@ -53,8 +52,6 @@ interface State {
     boardIndex: ZeroToThree,
     updateBoards: (boards: AllBoards, currentTurn: Player) => void
   ) => void;
-  setPreview: (x: ZeroToThree, y: ZeroToThree, boardIndex: ZeroToThree) => void;
-  clearPreview: () => void;
 }
 
 const useStore = create<State>()((set) => ({
@@ -184,8 +181,15 @@ const useStore = create<State>()((set) => ({
       };
     }),
   undoPassiveMove: () =>
-    set(({ boards, selectedStone, moveVector, playerType }) => {
-      if (!boards || !selectedStone || !moveVector || !playerType) return {};
+    set(({ boards, selectedStone, moveVector, playerType, moveType }) => {
+      if (
+        !boards ||
+        !selectedStone ||
+        !moveVector ||
+        !playerType ||
+        moveType === "passive"
+      )
+        return {};
       const newBoard = copyBoard(boards[selectedStone.boardIndex]);
       const dest = getTile(
         selectedStone.x,
@@ -197,11 +201,7 @@ const useStore = create<State>()((set) => ({
       newBoard[dest.y][dest.x].content = "empty";
       newBoard[selectedStone.y][selectedStone.x].content = playerType;
       return {
-        boards: getUpdatedBoards(
-          newBoard,
-          selectedStone.boardIndex,
-          getBoardsWithoutPreviews(boards)
-        ),
+        boards: getUpdatedBoards(newBoard, selectedStone.boardIndex, boards),
         boardsBeforePassiveMove: undefined,
         moveType: "passive",
         passiveMoveBoardColor: undefined,
@@ -212,15 +212,31 @@ const useStore = create<State>()((set) => ({
   makeAggressiveMove: (x, y, boardIndex, updateBoards) =>
     set(({ moveVector, boards, playerType, currentTurn }) => {
       if (!moveVector || !boards || !playerType || !currentTurn) return {};
-      const newBoards = getBoardsWithAggressiveMoveChanges(
-        x,
-        y,
-        boardIndex,
-        moveVector,
-        getBoardsWithoutPreviews(boards),
-        playerType
-      );
-      if (!newBoards) return {};
+      const board = boards[boardIndex];
+      const dest = getTile(x, y, moveVector, board);
+      if (!dest) return {};
+      const beforeDestVector = modifyVectorLength(moveVector, -1);
+      const beforeDest =
+        beforeDestVector.x !== 0 || beforeDestVector.y !== 0
+          ? getTile(x, y, beforeDestVector, board)
+          : undefined;
+      const destinationContent =
+        dest.content === "empty" && beforeDest
+          ? beforeDest.content
+          : dest.content;
+      const afterDestVector = modifyVectorLength(moveVector, 1);
+      const afterDest = getTile(x, y, afterDestVector, board);
+      const newBoard = copyBoard(board);
+
+      newBoard[y][x].content = "empty";
+      newBoard[dest.y][dest.x].content = playerType;
+      if (afterDest?.content === "empty") {
+        newBoard[afterDest.y][afterDest.x].content = destinationContent;
+      }
+      if (beforeDest) {
+        newBoard[beforeDest.y][beforeDest.x].content = "empty";
+      }
+      const newBoards = getUpdatedBoards(newBoard, boardIndex, boards);
       const newCurrentTurn =
         currentTurn === "black"
           ? "white"
@@ -239,70 +255,6 @@ const useStore = create<State>()((set) => ({
         winner: findWinner(newBoards),
       };
     }),
-  setPreview: (x, y, boardIndex) =>
-    set(({ moveVector, boards, playerType }) => {
-      if (!moveVector || !boards || !playerType) return {};
-      const newBoards = getBoardsWithAggressiveMoveChanges(
-        x,
-        y,
-        boardIndex,
-        moveVector,
-        boards,
-        playerType,
-        true
-      );
-      if (!newBoards) return {};
-      return { boards: newBoards };
-    }),
-  clearPreview: () =>
-    set(({ boards }) => {
-      if (!boards) return {};
-      return { boards: getBoardsWithoutPreviews(boards) };
-    }),
 }));
-
-const getBoardsWithAggressiveMoveChanges = (
-  x: ZeroToThree,
-  y: ZeroToThree,
-  boardIndex: ZeroToThree,
-  moveVector: MoveVector,
-  boards: AllBoards,
-  playerType: Player,
-  preview?: boolean
-): AllBoards | undefined => {
-  const board = boards[boardIndex];
-  const dest = getTile(x, y, moveVector, board);
-  if (!dest) return;
-  const newBoard = copyBoard(board);
-  const beforeDestVector = modifyVectorLength(moveVector, -1);
-  const beforeDest =
-    beforeDestVector.x !== 0 || beforeDestVector.y !== 0
-      ? getTile(x, y, beforeDestVector, board)
-      : undefined;
-  const destinationContent =
-    dest.content === "empty" && beforeDest ? beforeDest.content : dest.content;
-  const afterDestVector = modifyVectorLength(moveVector, 1);
-  const afterDest = getTile(x, y, afterDestVector, board);
-  if (preview) {
-    newBoard[y][x].preview = "empty";
-    newBoard[dest.y][dest.x].preview = playerType;
-    if (afterDest?.content === "empty") {
-      newBoard[afterDest.y][afterDest.x].preview = destinationContent;
-    }
-    if (beforeDest) {
-      newBoard[beforeDest.y][beforeDest.x].preview = "empty";
-    }
-  } else {
-    newBoard[y][x].content = "empty";
-    newBoard[dest.y][dest.x].content = playerType;
-    if (afterDest?.content === "empty") {
-      newBoard[afterDest.y][afterDest.x].content = destinationContent;
-    }
-    if (beforeDest) {
-      newBoard[beforeDest.y][beforeDest.x].content = "empty";
-    }
-  }
-  return getUpdatedBoards(newBoard, boardIndex, boards);
-};
 
 export default useStore;

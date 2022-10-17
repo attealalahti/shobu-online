@@ -28,7 +28,7 @@ const Game = () => {
   const moveType = useStore((state) => state.moveType);
   const winner = useStore((state) => state.winner);
   const undoPassiveMove = useStore((state) => state.undoPassiveMove);
-  onblur = undoPassiveMove;
+  window.onblur = undoPassiveMove;
 
   router.beforePopState(() => {
     clearGameData();

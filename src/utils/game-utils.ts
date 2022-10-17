@@ -194,14 +194,6 @@ export const clearMoveTargets = (board: BoardState) => {
   }
 };
 
-export const getBoardsWithoutPreviews = (boards: AllBoards) => {
-  const newBoards = copyAllBoards(boards);
-  newBoards.forEach((board) =>
-    board.forEach((row) => row.forEach((tile) => (tile.preview = undefined)))
-  );
-  return newBoards;
-};
-
 export const findWinner = (
   boards: AllBoards | undefined
 ): Player | undefined => {
