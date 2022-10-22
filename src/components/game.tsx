@@ -58,7 +58,7 @@ const Game = () => {
     update.mutate({ gameId, boards: formatBoardsForDb(boards), currentTurn });
   };
 
-  const newGame = trpc.useMutation("game.newGame", {
+  const newGame = trpc.useMutation("game.replay", {
     onSuccess: (data) => {
       setGameData(data);
       socket.emit("takeTurn");

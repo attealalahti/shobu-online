@@ -102,7 +102,7 @@ export const gameRouter = createRouter()
       }
     },
   })
-  .mutation("newGame", {
+  .mutation("replay", {
     input: z.object({ gameId: z.string(), playerId: z.string().nullish() }),
     async resolve({ input, ctx }) {
       const game = await ctx.prisma.game.findFirst({
