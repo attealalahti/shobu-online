@@ -10,7 +10,7 @@ import Image from "next/image";
 import backArrow from "../../public/images/back-arrow.svg";
 import { AllBoards, Player } from "../types/game-types";
 import { formatBoardsForDb } from "../utils/game-utils";
-import Modal from "./modal";
+import Modal from "./custom-modal";
 
 const Game = () => {
   const [connected, setConnected] = useState<boolean>(false);
