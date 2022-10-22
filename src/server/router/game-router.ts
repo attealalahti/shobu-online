@@ -26,62 +26,57 @@ export const gameRouter = createRouter()
       { playerType: Player; currentTurn: Player; boards: AllBoards } | undefined
     > {
       if (!input) return undefined;
-      let game = await ctx.prisma.game.findFirst({
+      const game = await ctx.prisma.game.findFirst({
         where: { namespace: input.gameId },
       });
       if (!game) {
-        const boards = formatBoardsForDb(createStartingBoards());
-        game = await ctx.prisma.game.create({
-          data: {
-            namespace: input.gameId,
-            currentTurn: "black",
-            boards,
-          },
-        });
+        throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
       }
-      if (game) {
-        let playerType: Player;
-        if (game.black === input.playerId) {
+      let playerType: Player;
+      if (game.black === input.playerId) {
+        playerType = "black";
+      } else if (game.white === input.playerId) {
+        playerType = "white";
+      } else {
+        if (!game.black && !game.white) {
+          playerType = Math.random() > 0.5 ? "black" : "white";
+        } else if (!game.black) {
           playerType = "black";
-        } else if (game.white === input.playerId) {
+        } else if (!game.white) {
           playerType = "white";
         } else {
-          if (!game.black && !game.white) {
-            playerType = Math.random() > 0.5 ? "black" : "white";
-          } else if (!game.black) {
-            playerType = "black";
-          } else if (!game.white) {
-            playerType = "white";
-          } else {
-            playerType = "spectator";
-          }
-          if (playerType === "black") {
-            await ctx.prisma.game.update({
-              where: { namespace: input.gameId },
-              data: { black: input.playerId },
-            });
-          } else if (playerType === "white") {
-            await ctx.prisma.game.update({
-              where: { namespace: input.gameId },
-              data: { white: input.playerId },
-            });
-          }
+          playerType = "spectator";
         }
-        try {
-          const dbBoards = game.boards as DbBoards;
-          dbBoardsSchema.parse(dbBoards);
-          playerEnum.parse(game.currentTurn);
-          const boards = formatBoardsForClient(dbBoards);
-          return {
-            playerType,
-            currentTurn: game.currentTurn as Player,
-            boards,
-          };
-        } catch (err) {
-          console.log(err);
+        if (playerType === "black") {
+          await ctx.prisma.game.update({
+            where: { namespace: input.gameId },
+            data: { black: input.playerId },
+          });
+        } else if (playerType === "white") {
+          await ctx.prisma.game.update({
+            where: { namespace: input.gameId },
+            data: { white: input.playerId },
+          });
         }
       }
-      return undefined;
+      try {
+        const dbBoards = game.boards as DbBoards;
+        dbBoardsSchema.parse(dbBoards);
+        playerEnum.parse(game.currentTurn);
+        const boards = formatBoardsForClient(dbBoards);
+        return {
+          playerType,
+          currentTurn: game.currentTurn as Player,
+          boards,
+        };
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to parse game data",
+          cause: err,
+        });
+      }
     },
   })
   .mutation("update", {
@@ -142,5 +137,26 @@ export const gameRouter = createRouter()
         currentTurn: newGame.currentTurn as Player,
         boards: formatBoardsForClient(newGame.boards as DbBoards),
       };
+    },
+  })
+  .mutation("new", {
+    async resolve({ ctx }) {
+      const games = await ctx.prisma.game.findMany({
+        select: { namespace: true },
+      });
+      const namespaces = games.map((game) => game.namespace);
+      let newNamespace = v4().slice(0, 6);
+      while (namespaces.includes(newNamespace)) {
+        newNamespace = v4().slice(0, 6);
+      }
+      const boards = formatBoardsForDb(createStartingBoards());
+      await ctx.prisma.game.create({
+        data: {
+          namespace: newNamespace,
+          currentTurn: "black",
+          boards,
+        },
+      });
+      return newNamespace;
     },
   });

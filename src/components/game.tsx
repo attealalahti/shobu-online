@@ -11,7 +11,6 @@ import backArrow from "../../public/images/back-arrow.svg";
 import { AllBoards, Player } from "../types/game-types";
 import { formatBoardsForDb } from "../utils/game-utils";
 import Modal from "./modal";
-import Link from "next/link";
 
 const Game = () => {
   const [connected, setConnected] = useState<boolean>(false);
@@ -34,11 +33,15 @@ const Game = () => {
     clearGameData();
     return true;
   });
+  const returnToMenu = () => {
+    clearGameData();
+    router.push("/");
+  };
 
   const playerId = usePlayerId();
 
   const utils = trpc.useContext();
-  trpc.useQuery(
+  const gameData = trpc.useQuery(
     [
       "game.data",
       playerId && gameId
@@ -124,6 +127,20 @@ const Game = () => {
               </div>
             </div>
           </div>
+        ) : gameData.error?.data?.code === "NOT_FOUND" ? (
+          <div className="flex h-full w-full flex-col justify-center text-center align-middle text-white">
+            <div className="m-auto flex flex-col gap-6">
+              <span className="block text-lg">
+                Game {gameId} was not found.
+              </span>
+              <button
+                className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black"
+                onClick={returnToMenu}
+              >
+                Return To Menu
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="flex h-full w-full">
             <div className="m-auto text-lg text-white">Loading...</div>
@@ -144,11 +161,12 @@ const Game = () => {
                     New Game
                   </button>
                 )}
-                <Link href="/">
-                  <span className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black">
-                    Return To Menu
-                  </span>
-                </Link>
+                <button
+                  className="rounded-lg border border-white p-4 text-xl hover:cursor-pointer hover:bg-white hover:text-black"
+                  onClick={returnToMenu}
+                >
+                  Return To Menu
+                </button>
               </div>
             </div>
           </div>
